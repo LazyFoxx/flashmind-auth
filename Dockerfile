@@ -1,5 +1,13 @@
-# Используем официальный лёгкий Python образ
+# ========== Builder ==========
 FROM python:3.13-slim
+
+
+# Системные зависимости для компиляции
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    libpq-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -12,11 +20,26 @@ RUN pip install --no-cache-dir poetry && \
     poetry config virtualenvs.create false && \
     poetry install --only main --no-interaction --no-ansi --no-root
 
-# Копируем код приложения
-COPY . .
+# ========== Final ==========
+FROM python:3.13-slim
 
-# Открываем порт
+# Runtime зависимости
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Непривилегированный пользователь
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Копируем установленное окружение и код
+WORKDIR /app
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY src/ ./src/
+
+# Права
+RUN chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8000
-
-# Запускаем сервер
 CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

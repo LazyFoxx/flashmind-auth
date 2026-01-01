@@ -6,12 +6,15 @@ __pycache__
 .pytest_cache
 .coverage
 htmlcov
+__pycache__
 
 # Виртуальные окружения и кэш Poetry
-.env
+.env*
 .venv
 venv
 .envs
+!.env.dev
+!.env.test
 
 # Git и локальные файлы
 .git
@@ -33,3 +36,7 @@ docker-compose.yml
 
 # Логи и временные файлы
 *.log
+
+# линтеры
+.mypy_cache/
+.ruff_cache/
