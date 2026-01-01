@@ -1,14 +1,17 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import BaseModel, PostgresDsn
+from pydantic_settings import BaseSettings
+
+
+class DatabaseConfig(BaseModel):
+    url: PostgresDsn
+    echo: bool = False
+    echo_pool: bool = False
+    pool_size: int = 10
+    max_overflow: int = 10
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "AuthService"
-    APP_VERSION: str = "0.1.0"
-    DEBUG: bool = True
-
-    model_config = SettingsConfigDict(
-        env_file=".env", env_ignore_empty=True, extra="ignore"
-    )
+    db: DatabaseConfig
 
 
 settings = Settings()
