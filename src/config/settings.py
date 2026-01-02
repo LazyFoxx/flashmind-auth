@@ -9,13 +9,22 @@ class DatabaseConfig(BaseModel):
     pool_size: int = 10
     max_overflow: int = 10
 
+    naming_convention: dict[str, str] = {
+        "pk": "pk_%(table_name)s",
+        "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+        "ix": "ix_%(column_0_label)s",
+        "uq": "uq_%(table_name)s_%(column_0_name)s",
+        "ck": "ck_%(table_name)s_%(constraint_name)s",
+    }
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        # env_file=".env.dev",
+        env_file=".env.dev",
         case_sensitive=False,
         env_nested_delimiter="__",
         env_prefix="APP_CONFIG__",
+        extra="ignore",
     )
 
     db: DatabaseConfig

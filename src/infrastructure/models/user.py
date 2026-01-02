@@ -1,13 +1,16 @@
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from sqlalchemy import String, Boolean, DateTime, Uuid, func
+from sqlalchemy import MetaData, String, Boolean, DateTime, Uuid, func
 from datetime import datetime
 import uuid
+from src.config.settings import settings
 
 
 class Base(DeclarativeBase):
     """Базовый клас"""
 
-    pass
+    metadata = MetaData(
+        naming_convention=settings.db.naming_convention,
+    )
 
 
 class UserModel(Base):
