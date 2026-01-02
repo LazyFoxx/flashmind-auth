@@ -15,7 +15,7 @@ repos:
     rev: v1.19.1
     hooks:
       - id: mypy
-        additional_dependencies: [fastapi, uvicorn, pydantic]
+        additional_dependencies: [fastapi, uvicorn, pydantic, alembic]
         # verbose: true
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
