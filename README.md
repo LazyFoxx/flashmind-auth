@@ -63,10 +63,10 @@ docker compose down -v
 
 **Adminer** (http://localhost:8080)
 - System: `PostgreSQL`
-- Server: `postgres-dev`
-- Username: `auth_user`
-- Password: `auth_pass`
-- Database: `auth_db`
+- Server: `auth-postgres-dev`
+- Username: `user`
+- Password: `password`
+- Database: `db`
 
 **pgAdmin** (http://localhost:5050)
 - Email: `admin@example.com` (или значение из `.env.dev`)
