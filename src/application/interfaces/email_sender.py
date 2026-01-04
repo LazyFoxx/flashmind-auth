@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 class AbstractEmailSender(ABC):
     """
     Абстрактный сервис отправки email.
-    Используется для верификации email, сброса пароля, уведомлений и т.д.
+    Используется для верификации email, сброса пароля посредством отправки кода.
     """
 
     @abstractmethod
@@ -27,5 +27,13 @@ class AbstractEmailSender(ABC):
             plain_text: текстовая версия
             html: HTML-версия (опционально)
             template_data: данные для шаблонизатора (если используешь)
+        """
+        ...
+
+    @abstractmethod
+    async def send_register_verification_code(self, email: str, code: int) -> None:
+        """
+        Отправляет email с кодом верификации
+
         """
         ...

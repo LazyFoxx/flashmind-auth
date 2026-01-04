@@ -1,5 +1,10 @@
-from pydantic import BaseModel, PostgresDsn
+from pydantic import BaseModel, PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class RedisConfig(BaseModel):
+    url: RedisDsn
+    max_connections: int
 
 
 class DatabaseConfig(BaseModel):
@@ -18,6 +23,19 @@ class DatabaseConfig(BaseModel):
     }
 
 
+class RateLimitConfig(BaseModel):
+    # Регистрация по email
+    register_email_limit: int
+    register_email_window_seconds: int
+
+    # Логин
+    login_email_limit: int
+    login_email_window_seconds: int
+
+    # Resend verification code
+    resend_code_cooldown_seconds: int
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env.dev",
@@ -28,6 +46,8 @@ class Settings(BaseSettings):
     )
 
     db: DatabaseConfig
+    rl: RateLimitConfig
+    redis: RedisConfig
 
 
 settings = Settings()
