@@ -1,5 +1,5 @@
+import json
 from src.application.interfaces import AbstractVerificationCodeRepository
-from typing import Tuple, Optional
 from redis.asyncio import Redis
 from src.domain.value_objects import Email
 
@@ -19,10 +19,25 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
         ttl_seconds: int,
         max_attempts: int,
     ) -> None:
-        pass
+        key = f"pending_reg:{email}"
 
-    async def get_pending(self, email: Email) -> Optional[Tuple[str, str, str]]:
-        pass
+        data = {
+            "email": str(email),
+            "hashed_password": hashed_password,
+            "verification_code": otp_hash,
+            "attempts_left": max_attempts,
+        }
+
+        await self.redis.set(
+            key,
+            json.dumps(data),
+            ex=ttl_seconds,
+        )
+
+        return None
+
+    # async def get_pending(self, email: Email) -> Optional[Tuple[str, str, str]]:
+    #     pass
 
     # async def verify_code(
     #     self,
