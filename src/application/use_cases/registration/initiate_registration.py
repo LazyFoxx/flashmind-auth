@@ -28,6 +28,7 @@ class InitiateRegistrationUseCase:
         self.email_sender = email_sender
         self.user_repo = user_repo
         self.rate_limit_cfg = settings.rl
+        self.email_code_cfg = settings.email_code
 
     async def execute(self, input_dto: AuthCredentialsDTO) -> AuthResponseDTO:
         email_vo = Email(input_dto.email)
@@ -55,10 +56,12 @@ class InitiateRegistrationUseCase:
         otp_hash = self.password_hasher.hash(otp)
 
         # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
-        self.verification_code_repo.save(
+        self.verification_code_repo.create_pending(
             email=email_vo,
             hashed_password=password_hash,
             otp_hash=otp_hash,
+            ttl_seconds=self.email_code_cfg.ttl_seconds,
+            max_attempts=self.email_code_cfg.max_attempts,
         )
 
         return None

@@ -7,6 +7,11 @@ class RedisConfig(BaseModel):
     max_connections: int
 
 
+class VerificationCodeConfig(BaseModel):
+    max_attempts: int
+    ttl_seconds: int
+
+
 class DatabaseConfig(BaseModel):
     url: PostgresDsn
     echo: bool = False
@@ -48,6 +53,7 @@ class Settings(BaseSettings):
     db: DatabaseConfig
     rl: RateLimitConfig
     redis: RedisConfig
+    email_code: VerificationCodeConfig
 
 
 settings = Settings()

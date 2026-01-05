@@ -15,7 +15,7 @@ class AbstractVerificationCodeRepository(ABC):
         hashed_password: str,
         otp_hash: str,
         ttl_seconds: int,
-        max_attempts: int = 5,
+        max_attempts: int,
     ) -> None:
         """
         Сохраняет данные pending-регистрации и устанавливает TTL.

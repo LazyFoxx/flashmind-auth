@@ -1,4 +1,3 @@
-# src/application/interfaces/user_repository.py
 from abc import ABC, abstractmethod
 from typing import Optional
 from uuid import UUID

@@ -1,5 +1,4 @@
 from src.application.interfaces import AbstractRateLimitRepository
-from config.settings import settings
 from typing import Tuple
 from redis.asyncio import Redis
 
@@ -10,7 +9,6 @@ class RateLimitRepository(AbstractRateLimitRepository):
 
     def __init__(self, redis: Redis) -> None:
         self.redis = redis
-        self.config = settings.rl
 
         # self._code_cooldown_sec: int = settings.rl.resend_code_cooldown_seconds
 
