@@ -1,3 +1,4 @@
+from uuid import uuid4
 from application.dtos import VerifyCodeDTO, AuthResponseDTO
 from application.interfaces import (
     AbstractEmailSender,
@@ -5,35 +6,83 @@ from application.interfaces import (
     AbstractRateLimitRepository,
     AbstractUserRepository,
     AbstractVerificationCodeRepository,
+    AbstractAuthenticationService,
 )
+from domain.entities.user import User
 from domain.value_objects import Email
 
 from src.config.settings import settings
+
+from application.exceptions import (
+    LimitCodeAttemptsError,
+    CodeAttemptError,
+    RequestExpiredError,
+)
 
 
 class FinishRegistrationUseCase:
     def __init__(
         self,
-        password_hasher: AbstractHasher,
+        hasher: AbstractHasher,
         rate_limit_repo: AbstractRateLimitRepository,
         verification_code_repo: AbstractVerificationCodeRepository,
         email_sender: AbstractEmailSender,
         user_repo: AbstractUserRepository,
+        authentication: AbstractAuthenticationService,
     ):
-        self.password_hasher = password_hasher
+        self.hasher = hasher
         self.rate_limit_repo = rate_limit_repo
         self.verification_code_repo = verification_code_repo
         self.email_sender = email_sender
         self.user_repo = user_repo
         self.rate_limit_cfg = settings.rl
         self.email_code_cfg = settings.email_code
+        self.authentication = authentication
 
     async def execute(self, input_dto: VerifyCodeDTO) -> AuthResponseDTO:
         email = Email(input_dto.email)
-        # user_code = input_dto.code
+        user_otp = input_dto.code
 
         # получаем хеш отпрвленного кода для сравнения
-        _, _, otp_hash = self.verification_code_repo.get_pending(email=email)
+        user_data = self.verification_code_repo.get_pending(email=email)
+
+        if user_data is None:
+            raise RequestExpiredError(str("Запрос истек. Начните регистрацию заново"))
 
         # Проверяем соответствие кода верификации
-        # result =
+        check_code = self.hasher.verify(user_otp, user_data.otp_hash)
+
+        if not check_code:
+            # если коды не совпадают - уменьшаем количество попыток
+            is_allowed, current_attempts, remaining_attempts = (
+                self.verification_code_repo.increment_and_check(
+                    email, limit_attempts=self.email_code_cfg.max_attempts
+                )
+            )
+
+            if not is_allowed:
+                # если попытки исчерпаны возвращаем ошибку (запрет на попытки)
+                raise LimitCodeAttemptsError(
+                    "Все попытки исчерпаны, начните регистрацию заново или запросите новый код"
+                )
+
+            # возвращаем ошибку что код не верный и указываем оставшиеся попытки
+            raise CodeAttemptError(
+                f"Неверный код, осталось {remaining_attempts} попыток"
+            )
+
+        # Если коды совпадают то добавляем пользователя в бд и возвращаем токены
+        user = User(
+            id=uuid4(),
+            email=email,
+            hashed_password=user_data.hashed_password,
+        )
+
+        self.user_repo.add(user)
+
+        # генерируем токены доступа и сохраняем refresh в редис
+        access_token, refresh_token = (
+            self.authentication.authenticate_and_generate_tokens()
+        )
+
+        return access_token, refresh_token

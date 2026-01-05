@@ -34,15 +34,16 @@ class AbstractVerificationCodeRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_pending(self, email: Email) -> Optional[Tuple[str, str, str]]:
+    async def get_pending(self, email: Email) -> Optional[dict]:
         """
-        Возвращает данные pending-регистрации или None, если:
+        Возвращает данные pending-регистрации или None, если
+        время ключа истекло или ключ удалили
 
         Args:
             email: email пользователя
 
         Returns:
-            (email: str, hashed_password: str, otp_hash: str)
+            data_pending: dict or None
         """
         pass
 
@@ -66,5 +67,36 @@ class AbstractVerificationCodeRepository(ABC):
         - Если код верный → (любое_число, True) и запись удаляется
         - Если код неверный и остались попытки → (оставшиеся_попытки, False)
         - Если код неверный и попытки кончились → (0, False) и запись удаляется
+        """
+        pass
+
+    @abstractmethod
+    async def increment_and_check(
+        self,
+        email: str,
+        limit_attempts: int,
+    ) -> Tuple[bool, int, int]:
+        """
+        Атомарно увеличивает счётчик и проверяет лимит.
+        Если лимит исчерпан то удаляет ключ. is_allowed = False
+
+        Args:
+            email: уникальный идентификатор (email)
+            limit_attempts: лимит попыток на window_seconds
+        Returns:
+            (is_allowed: bool, current_attempts: int, remaining_attempts: int)
+        """
+        pass
+
+    @abstractmethod
+    async def delete(
+        self,
+        email: str,
+    ) -> None:
+        """
+        Удаляет ключ и все значения связанные с ним.
+
+        Args:
+            email: уникальный идентификатор (email)
         """
         pass

@@ -6,7 +6,7 @@ class AbstractHasher(ABC):
     """Абстрактный интерфейс для хэширования и проверки паролей"""
 
     @abstractmethod
-    def hash(self, password: str) -> str:
+    def hash(self, plain_data: str) -> str:
         """
         Хэширует открытый пароль/код и возвращает строку с хэшем
 
@@ -21,13 +21,13 @@ class AbstractHasher(ABC):
         ...
 
     @abstractmethod
-    def verify(self, password: str, hashed_password: str) -> bool:
+    def verify(self, plain_data: str, hashed_data: str) -> bool:
         """
-        Проверяет, соответствует ли открытый текст хэшу
+        Проверяет, соответствует ли открытые данные хэшу
 
         Args:
-            plain_data: Открытый пароль
-            hashed_data: Хэш из базы данных
+            plain_data: Открытый пароль / код верификации
+            hashed_data: Хэш для сравнения
 
         Returns:
             True, если совпадает, иначе Fasle
