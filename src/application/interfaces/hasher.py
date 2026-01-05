@@ -2,18 +2,18 @@
 from abc import ABC, abstractmethod
 
 
-class AbstractPasswordHasher(ABC):
+class AbstractHasher(ABC):
     """Абстрактный интерфейс для хэширования и проверки паролей"""
 
     @abstractmethod
     def hash(self, password: str) -> str:
         """
-        Хэширует открытый пароль и возвращает строку с хэшем
+        Хэширует открытый пароль/код и возвращает строку с хэшем
 
         Должен включать соль и параметры алгоритма
 
         Args:
-            plain_password: Открытый пароль
+            plain_data: Открытый пароль / код верификации
 
         Returns:
             Строка с полным хэшем (например, $argon2id$v=19$m=65536,t=3,p=4$...)
@@ -23,13 +23,13 @@ class AbstractPasswordHasher(ABC):
     @abstractmethod
     def verify(self, password: str, hashed_password: str) -> bool:
         """
-        Проверяет, соответствует ли открытый пароль хэшу
+        Проверяет, соответствует ли открытый текст хэшу
 
         Args:
-            plain_password: Открытый пароль
-            hashed_password: Хэш из базы данных
+            plain_data: Открытый пароль
+            hashed_data: Хэш из базы данных
 
         Returns:
-            True, если пароль верный
+            True, если совпадает, иначе Fasle
         """
         ...
