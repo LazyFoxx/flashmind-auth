@@ -3,6 +3,14 @@ from src.domain.value_objects import Email
 from typing import Optional, Tuple
 
 
+# DTO для хранения pending-регистрации
+class PendingRegistrationData:
+    email: str
+    hashed_password: str
+    verification_code: str
+    max_attempts: int
+
+
 class AbstractVerificationCodeRepository(ABC):
     """
     Репозиторий для хранения и управления данными незавершённой регистрации.
@@ -48,29 +56,6 @@ class AbstractVerificationCodeRepository(ABC):
         pass
 
     @abstractmethod
-    async def verify_code(
-        self,
-        email: Email,
-        submitted_otp_hash: str,
-    ) -> Tuple[int, bool]:
-        """
-        Проверяет код.
-
-        Args:
-            email: email пользователя
-            submitted_otp_hash: хеш кода верификации
-
-        Returns:
-            (attempts: int, success: bool)
-
-        - Если запись не существует или истекла → (0, False)
-        - Если код верный → (любое_число, True) и запись удаляется
-        - Если код неверный и остались попытки → (оставшиеся_попытки, False)
-        - Если код неверный и попытки кончились → (0, False) и запись удаляется
-        """
-        pass
-
-    @abstractmethod
     async def increment_and_check(
         self,
         email: str,
@@ -89,7 +74,7 @@ class AbstractVerificationCodeRepository(ABC):
         pass
 
     @abstractmethod
-    async def delete(
+    async def delete_pending(
         self,
         email: str,
     ) -> None:
