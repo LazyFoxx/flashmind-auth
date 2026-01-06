@@ -1,0 +1,66 @@
+import secrets
+from application.dtos import AuthResponseDTO
+from application.interfaces import (
+    AbstractHasher,
+    AbstractUserRepository,
+    AbstractVerificationCodeRepository,
+    AbstractRateLimitRepository,
+    AbstractEmailSender,
+)
+from domain.value_objects import Email
+
+from src.config.settings import settings
+
+from application.exceptions import CooldownEmailError, RequestExpiredError
+
+
+class ResendRegistrationCodeUseCase:
+    def __init__(
+        self,
+        hasher: AbstractHasher,
+        verification_code_repo: AbstractVerificationCodeRepository,
+        user_repo: AbstractUserRepository,
+        rate_limit_repo: AbstractRateLimitRepository,
+        email_sender: AbstractEmailSender,
+    ):
+        self.hasher = hasher
+        self.verification_code_repo = verification_code_repo
+        self.user_repo = user_repo
+        self.rate_limit_cfg = settings.rl
+        self.email_code_cfg = settings.email_code
+        self.rate_limit_repo = rate_limit_repo
+        self.email_sender = email_sender
+
+    async def execute(self, email) -> AuthResponseDTO:
+        email_vo = Email(email)
+
+        user_data = self.verification_code_repo.get_pending(email=email)
+
+        # Проверяем наличие pending registration в редис
+        if user_data is None:
+            raise RequestExpiredError(str("Запрос истек. Начните регистрацию заново"))
+
+        # проверяем rate limit на отправвку email
+        check_cooldown = self.rate_limit_repo.check_and_set_cooldown(
+            email=email_vo, cooldown=self.rate_limit_cfg.resend_code_cooldown_seconds
+        )
+        if not check_cooldown:
+            raise CooldownEmailError(
+                "Пожалуйста подождите пока будет допустимо отправить новый код"
+            )
+
+        # Генерируем код верификации
+        otp = str(secrets.randbelow(899000) + 100000)
+        # Отправляем код верификации на email пользователя
+        self.email_sender.send_register_verification_code(email_vo, otp)
+        # Хешируем код для безопасности
+        otp_hash = self.hasher.hash(otp)
+
+        # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
+        self.verification_code_repo.create_pending(
+            email=email_vo,
+            hashed_password=user_data.password_hash,
+            otp_hash=otp_hash,
+            ttl_seconds=self.email_code_cfg.ttl_seconds,
+            max_attempts=self.email_code_cfg.max_attempts,
+        )

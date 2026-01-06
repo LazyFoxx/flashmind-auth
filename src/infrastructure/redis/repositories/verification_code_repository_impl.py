@@ -73,7 +73,7 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
         # Если ключ есть — увеличивает его значение на 1 и возвращает новое значение.
         current_attempts = await self.redis.incr(key)
 
-        # Сколько осталось попыток до истечения window
+        # Сколько осталось попыток
         remaining_attempts = max(0, limit_attempts - current_attempts)
 
         is_allowed = current_attempts <= limit_attempts

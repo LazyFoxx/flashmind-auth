@@ -1,9 +1,7 @@
 from uuid import uuid4
 from application.dtos import VerifyCodeDTO, AuthResponseDTO
 from application.interfaces import (
-    AbstractEmailSender,
     AbstractHasher,
-    AbstractRateLimitRepository,
     AbstractUserRepository,
     AbstractVerificationCodeRepository,
     AbstractAuthenticationService,
@@ -24,16 +22,12 @@ class FinishRegistrationUseCase:
     def __init__(
         self,
         hasher: AbstractHasher,
-        rate_limit_repo: AbstractRateLimitRepository,
         verification_code_repo: AbstractVerificationCodeRepository,
-        email_sender: AbstractEmailSender,
         user_repo: AbstractUserRepository,
         authentication: AbstractAuthenticationService,
     ):
         self.hasher = hasher
-        self.rate_limit_repo = rate_limit_repo
         self.verification_code_repo = verification_code_repo
-        self.email_sender = email_sender
         self.user_repo = user_repo
         self.rate_limit_cfg = settings.rl
         self.email_code_cfg = settings.email_code
@@ -46,6 +40,7 @@ class FinishRegistrationUseCase:
         # получаем хеш отпрвленного кода для сравнения
         user_data = self.verification_code_repo.get_pending(email=email)
 
+        # Проверяем наличие pending registration в редис
         if user_data is None:
             raise RequestExpiredError(str("Запрос истек. Начните регистрацию заново"))
 
@@ -85,4 +80,4 @@ class FinishRegistrationUseCase:
             self.authentication.authenticate_and_generate_tokens()
         )
 
-        return access_token, refresh_token
+        return AuthResponseDTO(access_token, refresh_token)

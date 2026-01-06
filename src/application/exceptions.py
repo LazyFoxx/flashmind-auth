@@ -29,3 +29,11 @@ class CodeAttemptError(ApplicationError):
 
 class RequestExpiredError(ApplicationError):
     """ключ не найден - начать регистрацию заново"""
+
+    pass
+
+
+class CooldownEmailError(ApplicationError):
+    """Кулдаун имейла еще не истек"""
+
+    pass

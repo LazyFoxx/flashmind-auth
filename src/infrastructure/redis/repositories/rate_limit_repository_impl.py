@@ -10,8 +10,6 @@ class RateLimitRepository(AbstractRateLimitRepository):
     def __init__(self, redis: Redis) -> None:
         self.redis = redis
 
-        # self._code_cooldown_sec: int = settings.rl.resend_code_cooldown_seconds
-
     async def increment_and_check(
         self,
         email: str,
@@ -34,10 +32,9 @@ class RateLimitRepository(AbstractRateLimitRepository):
 
         return is_allowed, current_attempts, remaining_attempts
 
-    # 2. Специальный метод для cooldown (resend verification code)
-    # async def check_and_set_cooldown(
-    #     self,
-    #     email: str,
-    #     prefix: str = "cooldown",
-    # ) -> Tuple[bool, int]:
-    #     pass
+    async def check_and_set_cooldown(self, email: str, cooldown: int) -> bool:
+        key = f"cooldown:{email.lower()}"
+
+        created = self.redis.set(key, "1", ex=cooldown, nx=True)
+
+        return created is True

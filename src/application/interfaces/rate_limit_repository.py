@@ -33,17 +33,16 @@ class AbstractRateLimitRepository(ABC):
     async def check_and_set_cooldown(
         self,
         email: str,
-        prefix: str = "cooldown",
-    ) -> Tuple[bool, int]:
+        cooldown: int,
+    ) -> bool:
         """
-        Проверяет, прошёл ли cooldown, и если да — устанавливает новый.
+        Проверяет, прошёл ли cooldown, и если да — возвращает True
+        и устанавливает новый, иначе False.
 
         Args:
             email: уникальный идентификатор (email)
-            prefix: префикс ключа
 
         Returns:
-            (is_allowed: bool, retry_after_seconds: int)
-            Если is_allowed = False → retry_after_seconds = сколько секунд осталось ждать
+            is_allowed: bool
         """
         pass
