@@ -42,7 +42,7 @@ class AbstractVerificationCodeRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_pending(self, email: Email) -> Optional[dict]:
+    async def get_pending(self, email: Email) -> Optional[PendingRegistrationData]:
         """
         Возвращает данные pending-регистрации или None, если
         время ключа истекло или ключ удалили

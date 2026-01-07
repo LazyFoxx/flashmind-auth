@@ -10,8 +10,6 @@ from application.interfaces import (
 )
 from domain.value_objects import Email, HashedPassword
 
-from src.config.settings import settings
-
 
 class InitiateRegistrationUseCase:
     def __init__(
@@ -21,14 +19,20 @@ class InitiateRegistrationUseCase:
         verification_code_repo: AbstractVerificationCodeRepository,
         email_sender: AbstractEmailSender,
         user_repo: AbstractUserRepository,
+        register_email_limit,
+        register_email_window_seconds,
+        ttl_seconds,
+        max_attempts,
     ):
         self.hasher = hasher
         self.rate_limit_repo = rate_limit_repo
         self.verification_code_repo = verification_code_repo
         self.email_sender = email_sender
         self.user_repo = user_repo
-        self.rate_limit_cfg = settings.rl
-        self.email_code_cfg = settings.email_code
+        self.register_email_limit = register_email_limit
+        self.register_email_window_seconds = register_email_window_seconds
+        self.ttl_seconds = ttl_seconds
+        self.max_attempts = max_attempts
 
     async def execute(self, input_dto: AuthCredentialsDTO) -> None:
         email_vo = Email(input_dto.email)
@@ -42,8 +46,8 @@ class InitiateRegistrationUseCase:
         is_allowed, _, remaining = await self.rate_limit_repo.increment_and_check(
             email=email_vo,
             prefix="register",
-            limit_attempts=self.rate_limit_cfg.register_email_limit,
-            window_seconds=self.rate_limit_cfg.register_email_window_seconds,
+            limit_attempts=self.register_email_limit,
+            window_seconds=self.register_email_window_seconds,
         )
         if not is_allowed:
             raise RateLimitExceededError(remaining)
@@ -60,8 +64,8 @@ class InitiateRegistrationUseCase:
             email=email_vo,
             hashed_password=password_hash,
             otp_hash=otp_hash,
-            ttl_seconds=self.email_code_cfg.ttl_seconds,
-            max_attempts=self.email_code_cfg.max_attempts,
+            ttl_seconds=self.ttl_seconds,
+            max_attempts=self.max_attempts,
         )
 
         return None

@@ -9,8 +9,6 @@ from application.interfaces import (
 from domain.entities.user import User
 from domain.value_objects import Email
 
-from src.config.settings import settings
-
 from application.exceptions import (
     LimitCodeAttemptsError,
     CodeAttemptError,
@@ -25,13 +23,13 @@ class FinishRegistrationUseCase:
         verification_code_repo: AbstractVerificationCodeRepository,
         user_repo: AbstractUserRepository,
         authentication: AbstractAuthenticationService,
+        max_attempts,
     ):
         self.hasher = hasher
         self.verification_code_repo = verification_code_repo
         self.user_repo = user_repo
-        self.rate_limit_cfg = settings.rl
-        self.email_code_cfg = settings.email_code
         self.authentication = authentication
+        self.max_attempts = max_attempts
 
     async def execute(self, input_dto: VerifyCodeDTO) -> AuthResponseDTO:
         email = Email(input_dto.email)
@@ -51,7 +49,7 @@ class FinishRegistrationUseCase:
             # если коды не совпадают - уменьшаем количество попыток
             is_allowed, current_attempts, remaining_attempts = (
                 self.verification_code_repo.increment_and_check(
-                    email, limit_attempts=self.email_code_cfg.max_attempts
+                    email, limit_attempts=self.max_attempts
                 )
             )
 

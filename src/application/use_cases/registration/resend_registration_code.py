@@ -9,8 +9,6 @@ from application.interfaces import (
 )
 from domain.value_objects import Email
 
-from src.config.settings import settings
-
 from application.exceptions import CooldownEmailError, RequestExpiredError
 
 
@@ -22,14 +20,18 @@ class ResendRegistrationCodeUseCase:
         user_repo: AbstractUserRepository,
         rate_limit_repo: AbstractRateLimitRepository,
         email_sender: AbstractEmailSender,
+        ttl_seconds,
+        max_attempts,
+        resend_code_cooldown_seconds,
     ):
         self.hasher = hasher
         self.verification_code_repo = verification_code_repo
         self.user_repo = user_repo
-        self.rate_limit_cfg = settings.rl
-        self.email_code_cfg = settings.email_code
         self.rate_limit_repo = rate_limit_repo
         self.email_sender = email_sender
+        self.ttl_seconds = (ttl_seconds,)
+        self.max_attempts = max_attempts
+        self.resend_code_cooldown_seconds = resend_code_cooldown_seconds
 
     async def execute(self, email) -> AuthResponseDTO:
         email_vo = Email(email)
@@ -42,7 +44,7 @@ class ResendRegistrationCodeUseCase:
 
         # проверяем rate limit на отправвку email
         check_cooldown = self.rate_limit_repo.check_and_set_cooldown(
-            email=email_vo, cooldown=self.rate_limit_cfg.resend_code_cooldown_seconds
+            email=email_vo, cooldown=self.resend_code_cooldown_seconds
         )
         if not check_cooldown:
             raise CooldownEmailError(
@@ -59,8 +61,8 @@ class ResendRegistrationCodeUseCase:
         # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
         self.verification_code_repo.create_pending(
             email=email_vo,
-            hashed_password=user_data.password_hash,
+            hashed_password=user_data.hashed_password,
             otp_hash=otp_hash,
-            ttl_seconds=self.email_code_cfg.ttl_seconds,
-            max_attempts=self.email_code_cfg.max_attempts,
+            ttl_seconds=self.ttl_seconds,
+            max_attempts=self.max_attempts,
         )
