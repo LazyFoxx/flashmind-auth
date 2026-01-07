@@ -51,20 +51,6 @@ class AbstractUserRepository(ABC):
         ...
 
     @abstractmethod
-    async def update(self, user: User) -> None:
-        """Обновить данные существующего пользователя.
-
-        Args:
-            user: Объект User с обновлёнными полями. ID должен быть валидным.
-        """
-        ...
-
-    @abstractmethod
-    async def set_active(self, user_id: UUID, is_active: bool) -> None:
-        """Активировать или деактивировать пользователя."""
-        ...
-
-    @abstractmethod
     async def set_password(self, user_id: UUID, hashed_password: str) -> None:
         """Изменить пароль пользователя на новый."""
         ...
