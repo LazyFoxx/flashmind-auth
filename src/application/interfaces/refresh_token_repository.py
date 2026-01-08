@@ -21,7 +21,6 @@ class AbstractRefreshTokenRepository(ABC):
         Args:
             user_id: ID пользователя
             token_jti: Уникальный идентификатор токена (jti claim)
-            expires_in: Время жизни токена
         """
         ...
 
@@ -37,5 +36,7 @@ class AbstractRefreshTokenRepository(ABC):
 
     @abstractmethod
     async def revoke_by_user_id(self, user_id: UUID) -> None:
-        """Отозвать все refresh-токены пользователя (например, при logout)."""
+        """
+        Отзыв текущей сессии пользователя (logout или смена пароля).
+        """
         ...

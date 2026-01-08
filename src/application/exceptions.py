@@ -39,7 +39,14 @@ class CooldownEmailError(ApplicationError):
     pass
 
 
-class InvalidTokenError(ArithmeticError):
+class InvalidTokenError(ApplicationError):
     """токен недействителен/истёк"""
+
+    pass
+
+
+class TokenReuseDetectedError(ApplicationError):
+    """Вызывается когда обнаружена анамалия вызваранная возможной
+    попыткой переиспользовать истекший токен"""
 
     pass
