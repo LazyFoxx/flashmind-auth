@@ -1,28 +1,28 @@
+from typing import AsyncGenerator
 from dishka import Provider, Scope, provide
-from redis.asyncio import ConnectionPool
-from core.settings.redis import RedisSettings
+from redis.asyncio import Redis, from_url
+
+from core.settings import RedisSettings
 
 
 class RedisProvider(Provider):
-    scope = Scope.APP
-
-    settings = provide(RedisSettings)
-
-    @provide
-    def get_pool(self, settings: RedisSettings) -> ConnectionPool:
-        return ConnectionPool.from_url(
-            settings.get_url(),
-            max_connections=settings.max_connections,  # ← подбери под нагрузку
+    @provide(scope=Scope.APP)
+    async def redis_client(
+        self, redis_settings: RedisSettings
+    ) -> AsyncGenerator[Redis, None]:
+        client = from_url(
+            redis_settings.get_url(),
+            decode_responses=True,
             socket_timeout=5,
             socket_connect_timeout=5,
-            retry_on_timeout=True,
-            health_check_interval=30,
         )
+        try:
+            await client.ping()
+        except Exception as e:
+            await client.aclose()
+            raise RuntimeError("Cannot connect to Redis") from e
 
-    # @provide(is_async=True)
-    # async def get_redis(self, pool: ConnectionPool) -> Redis:
-    #     client = Redis(connection_pool=pool)
-    #     try:
-    #         yield client
-    #     finally:
-    #         await client.aclose()
+        try:
+            yield client
+        finally:
+            await client.aclose()  # гарантированно закроется

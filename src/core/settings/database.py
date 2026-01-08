@@ -1,4 +1,3 @@
-# src/core/settings/database.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import PostgresDsn, SecretStr
 
@@ -12,12 +11,13 @@ class DatabaseSettings(BaseSettings):
 
     pool_size: int
     max_overflow: int
+    echo: bool
 
     model_config = SettingsConfigDict(
         env_prefix="POSTGRES_", case_sensitive=False, extra="ignore"
     )
 
-    def build_dsn(self) -> PostgresDsn:
+    def get_url(self) -> PostgresDsn:
         """
         Собирает и валидирует DSN с помощью Pydantic PostgresDsn.
         Гарантирует корректность URL на этапе старта приложения.

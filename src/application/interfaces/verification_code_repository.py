@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-from src.domain.value_objects import Email
 from typing import Optional, Tuple
+from dataclasses import dataclass
 
 
 # DTO для хранения pending-регистрации
+@dataclass(frozen=True)
 class PendingRegistrationData:
     email: str
     hashed_password: str
-    verification_code: str
+    otp_hash: str
     max_attempts: int
 
 
@@ -19,7 +20,7 @@ class AbstractVerificationCodeRepository(ABC):
     @abstractmethod
     async def create_pending(
         self,
-        email: Email,
+        email: str,
         hashed_password: str,
         otp_hash: str,
         ttl_seconds: int,
@@ -42,7 +43,7 @@ class AbstractVerificationCodeRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_pending(self, email: Email) -> Optional[PendingRegistrationData]:
+    async def get_pending(self, email: str) -> Optional[PendingRegistrationData]:
         """
         Возвращает данные pending-регистрации или None, если
         время ключа истекло или ключ удалили
@@ -51,7 +52,7 @@ class AbstractVerificationCodeRepository(ABC):
             email: email пользователя
 
         Returns:
-            data_pending: dict or None
+            data_pending: PendingRegistrationData or None
         """
         pass
 

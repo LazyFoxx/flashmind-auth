@@ -1,13 +1,14 @@
-# src/domain/repositories/unit_of_work.py  (или просто abstract_uow.py)
 from abc import ABC, abstractmethod
 
 
 class AbstractUnitOfWork(ABC):
-    @abstractmethod
-    async def __aenter__(self) -> "AbstractUnitOfWork": ...
+    """Минималистичный современный UoW для async"""
+
+    async def __aenter__(self) -> "AbstractUnitOfWork":
+        return self
 
     @abstractmethod
-    async def __aexit__(self, exc_type, exc, tb) -> None: ...
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None: ...
 
     @abstractmethod
     async def commit(self) -> None: ...

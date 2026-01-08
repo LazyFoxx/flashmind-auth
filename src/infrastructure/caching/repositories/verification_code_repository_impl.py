@@ -4,7 +4,6 @@ from src.application.interfaces import (
     PendingRegistrationData,
 )
 from redis.asyncio import Redis
-from src.domain.value_objects import Email
 from typing import Optional, Tuple
 
 
@@ -15,12 +14,12 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
     def __init__(self, redis: Redis) -> None:
         self.redis = redis
 
-    def _get_key(self, email: Email) -> str:
+    def _get_key(self, email: str) -> str:
         return f"pending_registration:{str(email).lower()}"
 
     async def create_pending(
         self,
-        email: Email,
+        email: str,
         hashed_password: str,
         otp_hash: str,
         ttl_seconds: int,
@@ -31,8 +30,8 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
         data = {
             "email": str(email),
             "hashed_password": hashed_password,
-            "verification_code": otp_hash,
-            "attempts_left": max_attempts,
+            "otp_hash": otp_hash,
+            "max_attempts": max_attempts,
         }
 
         await self.redis.set(
@@ -43,7 +42,7 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
 
         return None
 
-    async def get_pending(self, email: Email) -> Optional[dict]:
+    async def get_pending(self, email: str) -> Optional[PendingRegistrationData]:
         key = self._get_key(email)
         raw = await self.redis.get(key)
 
@@ -65,7 +64,7 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
 
     async def increment_and_check(
         self,
-        email: Email,
+        email: str,
         limit_attempts: int,
     ) -> Tuple[bool, int, int]:
         key = self._get_key(email)
@@ -82,6 +81,6 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
 
     async def delete_pending(
         self,
-        email: Email,
+        email: str,
     ) -> None:
         self.redis.delete(self._get_key(email))

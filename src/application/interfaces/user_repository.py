@@ -15,17 +15,12 @@ class AbstractUserRepository(ABC):
 
         Returns:
             Объект User, если найден, иначе None
-
-        Raises:
-            DatabaseError: если произошла ошибка при обращении к БД (опционально в реализации)
         """
         ...
 
     @abstractmethod
     async def get_by_email(self, email: str) -> Optional[User]:
         """Получить пользователя по email (уникальному).
-
-        Email приводится к нижнему регистру перед поиском.
 
         Args:
             email: Email пользователя (будет нормализован)

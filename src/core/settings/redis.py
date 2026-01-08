@@ -13,6 +13,6 @@ class RedisSettings(BaseSettings):
         env_prefix="REDIS_", case_sensitive=False, extra="ignore"
     )
 
-    def build_dsn(self) -> RedisDsn:
+    def get_url(self) -> RedisDsn:
         password = f"{self.password.get_secret_value()}"
         return RedisDsn(f"redis://:{password}@{self.host}:{self.port}/{self.db}")

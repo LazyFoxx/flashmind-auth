@@ -24,4 +24,4 @@ class User:
     updated_at: Optional[datetime]
 
     is_active: bool = True
-    is_email_verified: bool = False
+    email_verified: bool = False

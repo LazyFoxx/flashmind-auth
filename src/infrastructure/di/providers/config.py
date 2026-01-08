@@ -3,15 +3,17 @@ from dishka import Provider, Scope, provide
 from src.core.settings import (
     VerificationCodeConfig,
     RateLimitConfig,
+    DatabaseSettings,
+    RedisSettings,
 )
 
 
 class ConfigProvider(Provider):
-    scope = Scope.APP
-
     # Целые объекты настроек
-    verification_code = provide(VerificationCodeConfig)
-    rate_limit = provide(RateLimitConfig)
+    verification_code = provide(VerificationCodeConfig, scope=Scope.APP)
+    rate_limit = provide(RateLimitConfig, scope=Scope.APP)
+    db_settings = provide(DatabaseSettings, scope=Scope.APP)
+    redis_settings = provide(RedisSettings, scope=Scope.APP)
 
     # Отдельные примитивы
     # rate limit
