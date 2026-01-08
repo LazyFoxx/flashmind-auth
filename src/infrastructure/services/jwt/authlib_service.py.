@@ -1,0 +1,97 @@
+from datetime import timedelta, datetime, timezone
+from typing import Dict, Any, Optional
+from uuid import UUID
+
+from authlib.jose import JsonWebKey, JoseError, JsonWebToken
+from authlib.jose.errors import ExpiredTokenError, InvalidClaimError
+
+from application.interfaces.jwt_service import AbstractJWTService
+# или domain/services/auth.py
+from core.settings.jwt import JwtSettings
+from domain.exceptions.auth import InvalidTokenError
+
+
+class AuthlibJWTService(AbstractJWTService):
+    """
+    JWT-сервис на основе authlib с поддержкой RS256 и JWKS
+    Готов к расширению
+    """
+    def __init__(self, settings: JwtSettings):
+        self.settings = settings
+
+        # Загружаем ключи
+        with open(settings.private_key_path) as f:
+            self.private_key = JsonWebKey.import_key(f.read(), {"kty": "RSA"})
+        with open(settings.public_key_path) as f:
+            self.public_key = JsonWebKey.import_key(f.read(), {"kty": "RSA"})
+
+        self.alg = "RS256"
+        self.kid = settings.key_id or "2026-01"
+        self.issuer = settings.issuer or "https://api.yourapp.com"
+
+        self.jwt = JsonWebToken([self.alg])
+
+        # JWKS для публичного доступа
+        self.jwks = {
+            "keys": [
+                self.public_key.as_dict(private=False, kid=self.kid, use="sig", alg=self.alg)
+            ]
+        }
+
+    def create_access_token(
+        self,
+        user_id: UUID,
+        extra_claims: Optional[Dict[str, Any]] = None,
+        expires_delta: Optional[timedelta] = None,
+    ) -> str:
+        expires_in = expires_delta or timedelta(minutes=self.settings.access_expire_minutes)
+        claims = {
+            "sub": str(user_id),
+            "iss": self.issuer,
+            "iat": datetime.now(timezone.utc),
+            "exp": datetime.now(timezone.utc) + expires_in,
+            **(extra_claims or {}),
+        }
+
+        headers = {"kid": self.kid}
+        return self.jwt.encode(headers, claims, self.private_key)
+
+    def create_refresh_token(
+        self,
+        user_id: UUID,
+        token_jti: Optional[str] = None,
+        expires_delta: Optional[timedelta] = None,
+    ) -> str:
+        expires_in = expires_delta or timedelta(days=self.settings.refresh_expire_days)
+        claims = {
+            "sub": str(user_id),
+            "type": "refresh",
+            "jti": token_jti or str(UUID(int=datetime.now(timezone.utc).timestamp() * 1000000)),
+            "iss": self.issuer,
+            "iat": datetime.now(timezone.utc),
+            "exp": datetime.now(timezone.utc) + expires_in,
+        }
+
+        headers = {"kid": self.kid}
+        return self.jwt.encode(headers, claims, self.private_key)
+
+    def verify_access_token(self, token: str) -> Dict[str, Any]:
+        try:
+            claims = self.jwt.decode(token, self.public_key)
+            claims.validate(iss=self.issuer)  # проверка issuer, exp, iat и т.д.
+            return claims
+        except ExpiredTokenError:
+            raise InvalidTokenError("Token expired")
+        except InvalidClaimError as e:
+            raise InvalidTokenError(f"Invalid claim: {e}")
+        except JoseError as e:
+            raise InvalidTokenError(f"Invalid token: {e}")
+
+    def verify_refresh_token(self, token: str) -> Dict[str, Any]:
+        payload = self.verify_access_token(token)
+        if payload.get("type") != "refresh":
+            raise InvalidTokenError("Not a refresh token")
+        return payload
+
+    def get_public_keys(self) -> Dict[str, Any]:
+        return self.jwks

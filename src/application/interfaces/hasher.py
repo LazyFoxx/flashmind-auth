@@ -1,4 +1,3 @@
-# src/application/interfaces/password_hasher.py
 from abc import ABC, abstractmethod
 
 
