@@ -4,11 +4,11 @@ from uuid import UUID
 
 from authlib.jose import JsonWebKey, JoseError, JsonWebToken
 from authlib.jose.errors import ExpiredTokenError, InvalidClaimError
+from application.exceptions import InvalidTokenError
 
 from application.interfaces.jwt_service import AbstractJWTService
-# или domain/services/auth.py
 from core.settings.jwt import JwtSettings
-from domain.exceptions.auth import InvalidTokenError
+from uuid import uuid4
 
 
 class AuthlibJWTService(AbstractJWTService):
@@ -16,6 +16,7 @@ class AuthlibJWTService(AbstractJWTService):
     JWT-сервис на основе authlib с поддержкой RS256 и JWKS
     Готов к расширению
     """
+
     def __init__(self, settings: JwtSettings):
         self.settings = settings
 
@@ -26,15 +27,17 @@ class AuthlibJWTService(AbstractJWTService):
             self.public_key = JsonWebKey.import_key(f.read(), {"kty": "RSA"})
 
         self.alg = "RS256"
-        self.kid = settings.key_id or "2026-01"
-        self.issuer = settings.issuer or "https://api.yourapp.com"
+        self.kid = settings.key_id
+        self.issuer = settings.issuer
 
         self.jwt = JsonWebToken([self.alg])
 
         # JWKS для публичного доступа
         self.jwks = {
             "keys": [
-                self.public_key.as_dict(private=False, kid=self.kid, use="sig", alg=self.alg)
+                self.public_key.as_dict(
+                    private=False, kid=self.kid, use="sig", alg=self.alg
+                )
             ]
         }
 
@@ -42,9 +45,8 @@ class AuthlibJWTService(AbstractJWTService):
         self,
         user_id: UUID,
         extra_claims: Optional[Dict[str, Any]] = None,
-        expires_delta: Optional[timedelta] = None,
     ) -> str:
-        expires_in = expires_delta or timedelta(minutes=self.settings.access_expire_minutes)
+        expires_in = timedelta(minutes=self.settings.access_expire_minutes)
         claims = {
             "sub": str(user_id),
             "iss": self.issuer,
@@ -59,14 +61,12 @@ class AuthlibJWTService(AbstractJWTService):
     def create_refresh_token(
         self,
         user_id: UUID,
-        token_jti: Optional[str] = None,
-        expires_delta: Optional[timedelta] = None,
     ) -> str:
-        expires_in = expires_delta or timedelta(days=self.settings.refresh_expire_days)
+        expires_in = timedelta(days=self.settings.refresh_expire_days)
         claims = {
             "sub": str(user_id),
             "type": "refresh",
-            "jti": token_jti or str(UUID(int=datetime.now(timezone.utc).timestamp() * 1000000)),
+            "jti": str(uuid4()),
             "iss": self.issuer,
             "iat": datetime.now(timezone.utc),
             "exp": datetime.now(timezone.utc) + expires_in,
@@ -88,10 +88,21 @@ class AuthlibJWTService(AbstractJWTService):
             raise InvalidTokenError(f"Invalid token: {e}")
 
     def verify_refresh_token(self, token: str) -> Dict[str, Any]:
-        payload = self.verify_access_token(token)
-        if payload.get("type") != "refresh":
-            raise InvalidTokenError("Not a refresh token")
-        return payload
+        try:
+            claims = self.jwt.decode(token, self.public_key)
+            claims.validate(iss=self.issuer)
+
+            if claims.get("type") != "refresh":
+                raise InvalidTokenError("Invalid token type: expected 'refresh'")
+
+            return claims
+
+        except ExpiredTokenError:
+            raise InvalidTokenError("Refresh token has expired")
+        except InvalidClaimError as e:
+            raise InvalidTokenError(f"Invalid refresh token claim: {e}")
+        except JoseError as e:
+            raise InvalidTokenError(f"Invalid refresh token: {e}")
 
     def get_public_keys(self) -> Dict[str, Any]:
         return self.jwks

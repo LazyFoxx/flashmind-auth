@@ -37,3 +37,9 @@ class CooldownEmailError(ApplicationError):
     """Кулдаун имейла еще не истек"""
 
     pass
+
+
+class InvalidTokenError(ArithmeticError):
+    """токен недействителен/истёк"""
+
+    pass
