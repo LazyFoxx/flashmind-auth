@@ -4,9 +4,6 @@ from redis.asyncio import Redis
 
 
 class RateLimitRepository(AbstractRateLimitRepository):
-    # def __init__(self, redis: Redis = Depends(redis_client.get_client)):
-    #     self.redis = redis
-
     def __init__(self, redis: Redis) -> None:
         self.redis = redis
 

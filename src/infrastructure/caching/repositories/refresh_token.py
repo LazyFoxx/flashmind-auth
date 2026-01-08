@@ -1,4 +1,3 @@
-# src/infrastructure/persistence/repositories/refresh_token.py
 import redis.asyncio as redis
 from uuid import UUID
 from datetime import timedelta
