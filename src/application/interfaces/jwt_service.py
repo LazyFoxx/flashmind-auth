@@ -1,4 +1,3 @@
-# src/application/interfaces/jwt_service.py
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 from uuid import UUID
