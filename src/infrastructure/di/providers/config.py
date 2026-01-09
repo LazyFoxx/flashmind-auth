@@ -6,6 +6,7 @@ from src.core.settings import (
     DatabaseSettings,
     RedisSettings,
     JwtSettings,
+    EmailSettings,
 )
 
 
@@ -16,6 +17,7 @@ class ConfigProvider(Provider):
     db_settings = provide(DatabaseSettings, scope=Scope.APP)
     redis_settings = provide(RedisSettings, scope=Scope.APP)
     jwt_settings = provide(JwtSettings, scope=Scope.APP)
+    email_settings = provide(EmailSettings, scope=Scope.APP)
 
     # Отдельные примитивы
     # rate limit
