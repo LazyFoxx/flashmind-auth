@@ -1,4 +1,6 @@
 import secrets
+
+from fastapi import BackgroundTasks
 from src.application.dtos import AuthCredentialsDTO
 from src.application.exceptions import EmailAlreadyExistsError, RateLimitExceededError
 from src.application.interfaces import (
@@ -19,6 +21,7 @@ class InitiateRegistrationUseCase:
         verification_code_repo: AbstractVerificationCodeRepository,
         email_sender: AbstractEmailSender,
         uow: AbstractUnitOfWork,
+        background_tasks: BackgroundTasks,
         register_email_limit,
         register_email_window_seconds,
         ttl_seconds,
@@ -33,6 +36,7 @@ class InitiateRegistrationUseCase:
         self.register_email_window_seconds = register_email_window_seconds
         self.ttl_seconds = ttl_seconds
         self.max_attempts = max_attempts
+        self.background_tasks = background_tasks
 
     async def execute(self, input_dto: AuthCredentialsDTO) -> None:
         email_vo = str(Email(input_dto.email))
@@ -56,7 +60,9 @@ class InitiateRegistrationUseCase:
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)
         # Отправляем код верификации на email пользователя
-        await self.email_sender.send_register_verification_code(email_vo, otp)
+        await self.email_sender.send_register_verification_code(
+            email_vo, otp, background_tasks=self.background_tasks
+        )
         # Хешируем код для безопасности
         otp_hash = self.hasher.hash(otp)
 
