@@ -5,8 +5,8 @@ from src.application.interfaces import (
     AbstractEmailSender,
     AbstractHasher,
     AbstractRateLimitRepository,
-    AbstractUserRepository,
     AbstractVerificationCodeRepository,
+    AbstractUnitOfWork,
 )
 from src.domain.value_objects import Email, HashedPassword
 
@@ -18,7 +18,7 @@ class InitiateRegistrationUseCase:
         rate_limit_repo: AbstractRateLimitRepository,
         verification_code_repo: AbstractVerificationCodeRepository,
         email_sender: AbstractEmailSender,
-        user_repo: AbstractUserRepository,
+        uow: AbstractUnitOfWork,
         register_email_limit,
         register_email_window_seconds,
         ttl_seconds,
@@ -28,7 +28,7 @@ class InitiateRegistrationUseCase:
         self.rate_limit_repo = rate_limit_repo
         self.verification_code_repo = verification_code_repo
         self.email_sender = email_sender
-        self.user_repo = user_repo
+        self.uow = uow
         self.register_email_limit = register_email_limit
         self.register_email_window_seconds = register_email_window_seconds
         self.ttl_seconds = ttl_seconds
@@ -39,8 +39,9 @@ class InitiateRegistrationUseCase:
         password_hash = str(HashedPassword(self.hasher.hash(input_dto.password)))
 
         # Проверка уникальности email
-        if await self.user_repo.get_by_email(email_vo):
-            raise EmailAlreadyExistsError(email_vo)
+        async with self.uow:
+            if await self.uow.users.get_by_email(email_vo):
+                raise EmailAlreadyExistsError(email_vo)
 
         # Rate limiting
         is_allowed, _, remaining = await self.rate_limit_repo.increment_and_check(

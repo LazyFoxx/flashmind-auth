@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
 
+from src.application.interfaces import AbstractUserRepository
+
 
 class AbstractUnitOfWork(ABC):
     """Минималистичный современный UoW для async"""
+
+    users: AbstractUserRepository
 
     async def __aenter__(self) -> "AbstractUnitOfWork":
         return self

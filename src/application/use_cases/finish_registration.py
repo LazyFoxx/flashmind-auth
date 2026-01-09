@@ -2,9 +2,9 @@ from uuid import uuid4
 from src.application.dtos import VerifyCodeDTO, AuthResponseDTO
 from src.application.interfaces import (
     AbstractHasher,
-    AbstractUserRepository,
     AbstractVerificationCodeRepository,
     AbstractAuthenticationService,
+    AbstractUnitOfWork,
 )
 from src.domain.entities.user import User
 from src.domain.value_objects import Email, HashedPassword
@@ -21,14 +21,14 @@ class FinishRegistrationUseCase:
         self,
         hasher: AbstractHasher,
         verification_code_repo: AbstractVerificationCodeRepository,
-        user_repo: AbstractUserRepository,
         authentication: AbstractAuthenticationService,
+        uow: AbstractUnitOfWork,
         max_attempts,
     ):
         self.hasher = hasher
         self.verification_code_repo = verification_code_repo
-        self.user_repo = user_repo
         self.authentication = authentication
+        self.uow = uow
         self.max_attempts = max_attempts
 
     async def execute(self, input_dto: VerifyCodeDTO) -> AuthResponseDTO:
@@ -72,8 +72,9 @@ class FinishRegistrationUseCase:
             email=Email(email),
             hashed_password=HashedPassword(user_data.hashed_password),
         )
-
-        await self.user_repo.add(user)
+        async with self.uow:
+            await self.uow.users.add(user)
+            await self.uow.commit()
 
         # генерируем токены доступа и сохраняем refresh в редис
         (

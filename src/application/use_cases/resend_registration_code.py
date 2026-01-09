@@ -1,7 +1,6 @@
 import secrets
 from src.application.interfaces import (
     AbstractHasher,
-    AbstractUserRepository,
     AbstractVerificationCodeRepository,
     AbstractRateLimitRepository,
     AbstractEmailSender,
@@ -16,7 +15,6 @@ class ResendRegistrationCodeUseCase:
         self,
         hasher: AbstractHasher,
         verification_code_repo: AbstractVerificationCodeRepository,
-        user_repo: AbstractUserRepository,
         rate_limit_repo: AbstractRateLimitRepository,
         email_sender: AbstractEmailSender,
         ttl_seconds,
@@ -25,7 +23,6 @@ class ResendRegistrationCodeUseCase:
     ):
         self.hasher = hasher
         self.verification_code_repo = verification_code_repo
-        self.user_repo = user_repo
         self.rate_limit_repo = rate_limit_repo
         self.email_sender = email_sender
         self.ttl_seconds = ttl_seconds
