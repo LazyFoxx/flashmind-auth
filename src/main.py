@@ -1,18 +1,19 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-from src.infrastructure.db.db_helper import db_helper
-from src.infrastructure.redis.client import redis_client
+from infrastructure.di.container import get_container
+from dishka.integrations.fastapi import setup_dishka
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup
-    await redis_client.get_client()
+    container = get_container()
+    app.state.dishka_container = container
     yield
     # shutdown
-    await redis_client.close()
-    await db_helper.dispose()
+    await container.close()
 
 
 app = FastAPI(lifespan=lifespan)
+setup_dishka(get_container, app=app)
