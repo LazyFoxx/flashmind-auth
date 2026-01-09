@@ -1,11 +1,11 @@
-import redis.asyncio as redis
+from redis.asyncio import Redis
 from uuid import UUID
 from datetime import timedelta
 
 from src.application.interfaces import (
     AbstractRefreshTokenRepository,
-)  # или domain/repositories
-from core.settings.jwt import JwtSettings
+)
+from src.core.settings.jwt import JwtSettings
 
 
 class RedisRefreshTokenRepository(AbstractRefreshTokenRepository):
@@ -17,7 +17,7 @@ class RedisRefreshTokenRepository(AbstractRefreshTokenRepository):
 
     def __init__(
         self,
-        redis_client: redis.Redis,
+        redis_client: Redis,
         settings: JwtSettings,
     ):
         self.redis = redis_client

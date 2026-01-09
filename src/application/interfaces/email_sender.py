@@ -10,7 +10,7 @@ class AbstractEmailSender(ABC):
 
     @abstractmethod
     async def send_register_verification_code(
-        self, email: str, code: int, background_tasks: Optional[BackgroundTasks] = None
+        self, email: str, code: str, background_tasks: Optional[BackgroundTasks] = None
     ) -> None:
         """
         Отправляет email с кодом верификации фоново через BackgroundTasks

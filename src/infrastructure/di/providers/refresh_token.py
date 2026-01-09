@@ -1,5 +1,5 @@
 from dishka import Provider, Scope, provide
-from application.interfaces import AbstractRefreshTokenRepository
+from src.application.interfaces import AbstractRefreshTokenRepository
 from src.infrastructure.caching.repositories.refresh_token import (
     RedisRefreshTokenRepository,
 )

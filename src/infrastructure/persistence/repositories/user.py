@@ -4,13 +4,12 @@ from uuid import UUID
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from domain.entities.user import User
-from domain.value_objects.email import Email
+from src.domain.entities.user import User
 from src.application.interfaces import AbstractUserRepository
-from infrastructure.persistence.models import UserModel
+from src.infrastructure.persistence.models import UserModel
 
 
-class SqlAlchemyUserRepository(AbstractUserRepository):
+class SQlAlchemyUserRepository(AbstractUserRepository):
     def __init__(self, session: AsyncSession):
         self.session = session
 
@@ -20,7 +19,7 @@ class SqlAlchemyUserRepository(AbstractUserRepository):
         user_model = result.scalar_one_or_none()
         return user_model.to_domain() if user_model else None
 
-    async def get_by_email(self, email: Email) -> Optional[User]:
+    async def get_by_email(self, email: str) -> Optional[User]:
         stmt = select(UserModel).where(UserModel.email == email)
         result = await self.session.execute(stmt)
         user_model = result.scalar_one_or_none()

@@ -1,5 +1,4 @@
-# src/infrastructure/di/providers/config.py
-from dishka import Provider, Scope, provide
+from dishka import FromDishka, Provider, Scope, provide
 from src.core.settings import (
     VerificationCodeConfig,
     RateLimitConfig,
@@ -12,29 +11,58 @@ from src.core.settings import (
 
 class ConfigProvider(Provider):
     # Целые объекты настроек
-    verification_code = provide(VerificationCodeConfig, scope=Scope.APP)
-    rate_limit = provide(RateLimitConfig, scope=Scope.APP)
-    db_settings = provide(DatabaseSettings, scope=Scope.APP)
-    redis_settings = provide(RedisSettings, scope=Scope.APP)
-    jwt_settings = provide(JwtSettings, scope=Scope.APP)
-    email_settings = provide(EmailSettings, scope=Scope.APP)
+    @provide(scope=Scope.APP)
+    def verification_code(self) -> VerificationCodeConfig:
+        return VerificationCodeConfig()
+
+    @provide(scope=Scope.APP)
+    def rate_limit(self) -> RateLimitConfig:
+        return RateLimitConfig()
+
+    @provide(scope=Scope.APP)
+    def db_settings(self) -> DatabaseSettings:
+        return DatabaseSettings()
+
+    @provide(scope=Scope.APP)
+    def redis_settings(self) -> RedisSettings:
+        return RedisSettings()
+
+    @provide(scope=Scope.APP)
+    def get_jwt_settings(self) -> JwtSettings:
+        return JwtSettings()
+
+    @provide(scope=Scope.APP)
+    def email_settings(self) -> EmailSettings:
+        return EmailSettings()
 
     # Отдельные примитивы
     # rate limit
-    register_email_limit = provide(
-        lambda s: s.rate_limit.register_email_limit, provides=str
-    )
-    register_email_window_seconds = provide(
-        lambda s: s.rate_limit.register_email_window_seconds, provides=str
-    )
-    login_email_limit = provide(lambda s: s.rate_limit.login_email_limit, provides=str)
-    login_email_window_seconds = provide(
-        lambda s: s.rate_limit.login_email_window_seconds, provides=str
-    )
-    resend_code_cooldown_seconds = provide(
-        lambda s: s.rate_limit.resend_code_cooldown_seconds, provides=str
-    )
+    @provide(scope=Scope.APP)
+    def register_email_window_seconds(self, rl: RateLimitConfig = FromDishka()) -> int:
+        return rl.register_email_window_seconds
+
+    @provide(scope=Scope.APP)
+    def login_email_limit(self, rl: RateLimitConfig = FromDishka()) -> int:
+        return rl.login_email_limit
+
+    @provide(scope=Scope.APP)
+    def login_email_window_seconds(self, rl: RateLimitConfig = FromDishka()) -> int:
+        return rl.login_email_window_seconds
+
+    @provide(scope=Scope.APP)
+    def resend_code_cooldown_seconds(self, rl: RateLimitConfig = FromDishka()) -> int:
+        return rl.resend_code_cooldown_seconds
 
     # verification code
-    max_attempts = provide(lambda s: s.verification_code.max_attempts, provides=str)
-    ttl_seconds = provide(lambda s: s.verification_code.ttl_seconds, provides=str)
+
+    @provide(scope=Scope.APP)
+    def verification_code_max_attempts(
+        self, vc: VerificationCodeConfig = FromDishka()
+    ) -> int:
+        return vc.max_attempts
+
+    @provide(scope=Scope.APP)
+    def verification_code_ttl_seconds(
+        self, vc: VerificationCodeConfig = FromDishka()
+    ) -> int:
+        return vc.ttl_seconds

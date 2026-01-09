@@ -1,24 +1,18 @@
-# infrastructure/persistence/models/user_model.py
 from __future__ import annotations
 
 from datetime import datetime
 from uuid import uuid4, UUID
 
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
-from sqlalchemy import MetaData, String, Boolean, DateTime, func, Uuid
-from sqlalchemy.ext.asyncio import AsyncAttrs  # Важно для async
+from sqlalchemy import String, Boolean, DateTime, func, Uuid
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
-from domain.entities.user import User
-from domain.value_objects.email import Email  # предполагаю, что Email — value object
-from src.config.settings import settings
+from src.domain.entities.user import User
+from src.domain.value_objects import Email, HashedPassword
 
 
 class Base(AsyncAttrs, DeclarativeBase):
     """Базовый класс для всех моделей (с поддержкой async)."""
-
-    metadata = MetaData(
-        naming_convention=settings.db.naming_convention,
-    )
 
 
 class UserModel(Base):
@@ -65,12 +59,12 @@ class UserModel(Base):
         """Конвертирует загруженную ORM-модель в чистую доменную сущность."""
         return User(
             id=self.id,
-            email=Email(self.email),  # value object
-            hashed_password=self.hashed_password,
+            email=Email(self.email),
+            hashed_password=HashedPassword(self.hashed_password),
             created_at=self.created_at,
             updated_at=self.updated_at,
             is_active=self.is_active,
-            is_email_verified=self.email_verified,
+            email_verified=self.email_verified,
         )
 
     @classmethod
@@ -81,5 +75,5 @@ class UserModel(Base):
             email=str(user.email),
             hashed_password=user.hashed_password,
             is_active=user.is_active,
-            is_email_verified=user.is_email_verified,
+            email_verified=user.email_verified,
         )

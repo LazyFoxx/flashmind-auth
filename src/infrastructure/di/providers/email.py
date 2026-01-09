@@ -1,6 +1,6 @@
 from dishka import Provider, Scope, provide
-from application.interfaces import AbstractEmailSender
-from infrastructure.services.email_sender import ResendEmailSender
+from src.application.interfaces import AbstractEmailSender
+from src.infrastructure.services.email_sender import ResendEmailSender
 
 
 class EmailProvider(Provider):

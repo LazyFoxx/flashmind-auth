@@ -1,6 +1,3 @@
-from exceptions import Exception
-
-
 class DomainError(Exception):
     """Базовый класс для доменных ошибок"""
 

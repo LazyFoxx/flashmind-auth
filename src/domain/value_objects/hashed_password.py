@@ -1,7 +1,6 @@
-# src/domain/value_objects/hashed_password.py
 from __future__ import annotations
 from dataclasses import dataclass
-from domain.exceptions import InvalidPasswordError
+from src.domain.exceptions import InvalidPasswordError
 
 
 @dataclass(frozen=True, slots=True)

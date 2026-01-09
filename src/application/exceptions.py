@@ -1,6 +1,3 @@
-from exceptions import Exception
-
-
 class ApplicationError(Exception):
     """Базовый класс для application ошибок"""
 

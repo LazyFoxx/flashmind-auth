@@ -1,5 +1,5 @@
 from dishka import Provider, Scope, provide
-from application.interfaces import AbstractRateLimitRepository
+from src.application.interfaces import AbstractRateLimitRepository
 from src.infrastructure.caching.repositories.rate_limit_repository_impl import (
     RateLimitRepository,
 )

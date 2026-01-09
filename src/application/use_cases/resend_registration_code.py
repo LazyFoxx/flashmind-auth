@@ -1,15 +1,14 @@
 import secrets
-from application.dtos import AuthResponseDTO
-from application.interfaces import (
+from src.application.interfaces import (
     AbstractHasher,
     AbstractUserRepository,
     AbstractVerificationCodeRepository,
     AbstractRateLimitRepository,
     AbstractEmailSender,
 )
-from domain.value_objects import Email
+from src.domain.value_objects import Email
 
-from application.exceptions import CooldownEmailError, RequestExpiredError
+from src.application.exceptions import CooldownEmailError, RequestExpiredError
 
 
 class ResendRegistrationCodeUseCase:
@@ -29,14 +28,14 @@ class ResendRegistrationCodeUseCase:
         self.user_repo = user_repo
         self.rate_limit_repo = rate_limit_repo
         self.email_sender = email_sender
-        self.ttl_seconds = (ttl_seconds,)
+        self.ttl_seconds = ttl_seconds
         self.max_attempts = max_attempts
         self.resend_code_cooldown_seconds = resend_code_cooldown_seconds
 
-    async def execute(self, email) -> AuthResponseDTO:
-        email_vo = Email(email)
+    async def execute(self, email) -> None:
+        email_vo = str(Email(email))
 
-        user_data = self.verification_code_repo.get_pending(email=email)
+        user_data = await self.verification_code_repo.get_pending(email=email)
 
         # Проверяем наличие pending registration в редис
         if user_data is None:
@@ -54,15 +53,17 @@ class ResendRegistrationCodeUseCase:
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)
         # Отправляем код верификации на email пользователя
-        self.email_sender.send_register_verification_code(email_vo, otp)
+        await self.email_sender.send_register_verification_code(email_vo, otp)
         # Хешируем код для безопасности
         otp_hash = self.hasher.hash(otp)
 
         # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
-        self.verification_code_repo.create_pending(
+        await self.verification_code_repo.create_pending(
             email=email_vo,
             hashed_password=user_data.hashed_password,
             otp_hash=otp_hash,
             ttl_seconds=self.ttl_seconds,
             max_attempts=self.max_attempts,
         )
+
+        return None

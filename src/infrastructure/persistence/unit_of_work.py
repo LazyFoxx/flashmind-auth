@@ -1,7 +1,6 @@
-# src/infrastructure/persistence/unit_of_work.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.application.interfaces import AbstractUnitOfWork
-from infrastructure.persistence.repositories.user import SQLAlchemyUserRepository
+from src.infrastructure.persistence.repositories.user import SQlAlchemyUserRepository
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
@@ -10,7 +9,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     async def __aenter__(self) -> "SqlAlchemyUnitOfWork":
         # Репозитории создаём здесь — они используют текущую session
-        self.users = SQLAlchemyUserRepository(self.session)
+        self.users = SQlAlchemyUserRepository(self.session)
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):

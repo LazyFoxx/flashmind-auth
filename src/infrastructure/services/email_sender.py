@@ -3,7 +3,7 @@ import resend
 from fastapi import BackgroundTasks
 
 from src.application.interfaces import AbstractEmailSender
-from core.settings import EmailSettings
+from src.core.settings import EmailSettings
 
 
 class ResendEmailSender(AbstractEmailSender):
@@ -80,7 +80,7 @@ class ResendEmailSender(AbstractEmailSender):
     async def send_register_verification_code(
         self,
         email: str,
-        code: int,
+        code: str,
         background_tasks: Optional[BackgroundTasks] = None,
     ) -> None:
         """Отправка кода верификации при регистрации"""

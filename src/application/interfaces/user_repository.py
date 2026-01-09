@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 from uuid import UUID
 
-from domain.entities.user import User
+
+from src.domain.entities.user import User
 
 
 class AbstractUserRepository(ABC):

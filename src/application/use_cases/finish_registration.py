@@ -1,15 +1,15 @@
 from uuid import uuid4
-from application.dtos import VerifyCodeDTO, AuthResponseDTO
-from application.interfaces import (
+from src.application.dtos import VerifyCodeDTO, AuthResponseDTO
+from src.application.interfaces import (
     AbstractHasher,
     AbstractUserRepository,
     AbstractVerificationCodeRepository,
     AbstractAuthenticationService,
 )
-from domain.entities.user import User
-from domain.value_objects import Email
+from src.domain.entities.user import User
+from src.domain.value_objects import Email, HashedPassword
 
-from application.exceptions import (
+from src.application.exceptions import (
     LimitCodeAttemptsError,
     CodeAttemptError,
     RequestExpiredError,
@@ -32,11 +32,11 @@ class FinishRegistrationUseCase:
         self.max_attempts = max_attempts
 
     async def execute(self, input_dto: VerifyCodeDTO) -> AuthResponseDTO:
-        email = Email(input_dto.email)
+        email = str(Email(input_dto.email))
         user_otp = input_dto.code
 
         # получаем хеш отпрвленного кода для сравнения
-        user_data = self.verification_code_repo.get_pending(email=email)
+        user_data = await self.verification_code_repo.get_pending(email=email)
 
         # Проверяем наличие pending registration в редис
         if user_data is None:
@@ -47,10 +47,12 @@ class FinishRegistrationUseCase:
 
         if not check_code:
             # если коды не совпадают - уменьшаем количество попыток
-            is_allowed, current_attempts, remaining_attempts = (
-                self.verification_code_repo.increment_and_check(
-                    email, limit_attempts=self.max_attempts
-                )
+            (
+                is_allowed,
+                current_attempts,
+                remaining_attempts,
+            ) = await self.verification_code_repo.increment_and_check(
+                email, limit_attempts=self.max_attempts
             )
 
             if not is_allowed:
@@ -67,15 +69,16 @@ class FinishRegistrationUseCase:
         # Если коды совпадают то добавляем пользователя в бд и возвращаем токены
         user = User(
             id=uuid4(),
-            email=email,
-            hashed_password=user_data.hashed_password,
+            email=Email(email),
+            hashed_password=HashedPassword(user_data.hashed_password),
         )
 
-        self.user_repo.add(user)
+        await self.user_repo.add(user)
 
         # генерируем токены доступа и сохраняем refresh в редис
-        access_token, refresh_token = (
-            self.authentication.authenticate_and_generate_tokens()
-        )
+        (
+            access_token,
+            refresh_token,
+        ) = await self.authentication.authenticate_and_generate_tokens(user.id)
 
         return AuthResponseDTO(access_token, refresh_token)

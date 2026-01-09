@@ -4,10 +4,10 @@ from uuid import UUID
 
 from authlib.jose import JsonWebKey, JoseError, JsonWebToken
 from authlib.jose.errors import ExpiredTokenError, InvalidClaimError
-from application.exceptions import InvalidTokenError
+from src.application.exceptions import InvalidTokenError
 
-from application.interfaces.jwt_service import AbstractJWTService
-from core.settings.jwt import JwtSettings
+from src.application.interfaces.jwt_service import AbstractJWTService
+from src.core.settings.jwt import JwtSettings
 from uuid import uuid4
 
 

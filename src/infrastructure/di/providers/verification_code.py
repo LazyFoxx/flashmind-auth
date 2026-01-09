@@ -1,5 +1,5 @@
 from dishka import Provider, Scope, provide
-from application.interfaces import AbstractVerificationCodeRepository
+from src.application.interfaces import AbstractVerificationCodeRepository
 from src.infrastructure.caching.repositories.verification_code_repository_impl import (
     VerificationCodeRepository,
 )

@@ -1,14 +1,14 @@
 import secrets
-from application.dtos import AuthCredentialsDTO
-from application.exceptions import EmailAlreadyExistsError, RateLimitExceededError
-from application.interfaces import (
+from src.application.dtos import AuthCredentialsDTO
+from src.application.exceptions import EmailAlreadyExistsError, RateLimitExceededError
+from src.application.interfaces import (
     AbstractEmailSender,
     AbstractHasher,
     AbstractRateLimitRepository,
     AbstractUserRepository,
     AbstractVerificationCodeRepository,
 )
-from domain.value_objects import Email, HashedPassword
+from src.domain.value_objects import Email, HashedPassword
 
 
 class InitiateRegistrationUseCase:
@@ -35,12 +35,12 @@ class InitiateRegistrationUseCase:
         self.max_attempts = max_attempts
 
     async def execute(self, input_dto: AuthCredentialsDTO) -> None:
-        email_vo = Email(input_dto.email)
-        password_hash = HashedPassword(self.hasher.hash(input_dto.password))
+        email_vo = str(Email(input_dto.email))
+        password_hash = str(HashedPassword(self.hasher.hash(input_dto.password)))
 
         # Проверка уникальности email
         if await self.user_repo.get_by_email(email_vo):
-            raise EmailAlreadyExistsError(str(email_vo))
+            raise EmailAlreadyExistsError(email_vo)
 
         # Rate limiting
         is_allowed, _, remaining = await self.rate_limit_repo.increment_and_check(
@@ -55,12 +55,12 @@ class InitiateRegistrationUseCase:
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)
         # Отправляем код верификации на email пользователя
-        self.email_sender.send_register_verification_code(email_vo, otp)
+        await self.email_sender.send_register_verification_code(email_vo, otp)
         # Хешируем код для безопасности
         otp_hash = self.hasher.hash(otp)
 
         # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
-        self.verification_code_repo.create_pending(
+        await self.verification_code_repo.create_pending(
             email=email_vo,
             hashed_password=password_hash,
             otp_hash=otp_hash,

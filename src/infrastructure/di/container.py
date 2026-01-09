@@ -1,7 +1,6 @@
-# src/di/container.py
 from dishka import make_async_container
 
-from providers import (
+from .providers import (
     AuthProvider,
     ConfigProvider,
     DbProvider,
@@ -12,6 +11,7 @@ from providers import (
     RateLimitProvider,
     RedisProvider,
     VerificationCodeProvider,
+    RefreshTokenProvider,
 )
 
 # Список всех провайдеров
@@ -26,6 +26,7 @@ _PROVIDERS = [
     RateLimitProvider(),
     RedisProvider(),
     VerificationCodeProvider(),
+    RefreshTokenProvider(),
 ]
 
 
