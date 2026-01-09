@@ -1,4 +1,3 @@
-# di/providers/fastapi.py
 from dishka import Provider, Scope, provide, from_context
 from fastapi import BackgroundTasks
 
