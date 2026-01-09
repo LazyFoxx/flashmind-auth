@@ -39,17 +39,17 @@ class InitiateRegistrationUseCase:
         self.background_tasks = background_tasks
 
     async def execute(self, input_dto: AuthCredentialsDTO) -> None:
-        email_vo = str(Email(input_dto.email))
-        password_hash = str(HashedPassword(self.hasher.hash(input_dto.password)))
+        email_vo = Email.create(input_dto.email)
+        password_hash = HashedPassword(self.hasher.hash(input_dto.password))
 
         # Проверка уникальности email
         async with self.uow:
-            if await self.uow.users.get_by_email(email_vo):
-                raise EmailAlreadyExistsError(email_vo)
+            if await self.uow.users.get_by_email(email_vo.value):
+                raise EmailAlreadyExistsError(email_vo.value)
 
         # Rate limiting
         is_allowed, _, remaining = await self.rate_limit_repo.increment_and_check(
-            email=email_vo,
+            email=email_vo.value,
             prefix="register",
             limit_attempts=self.register_email_limit,
             window_seconds=self.register_email_window_seconds,
@@ -61,15 +61,15 @@ class InitiateRegistrationUseCase:
         otp = str(secrets.randbelow(899000) + 100000)
         # Отправляем код верификации на email пользователя
         await self.email_sender.send_register_verification_code(
-            email_vo, otp, background_tasks=self.background_tasks
+            email_vo.value, otp, background_tasks=self.background_tasks
         )
         # Хешируем код для безопасности
         otp_hash = self.hasher.hash(otp)
 
         # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
         await self.verification_code_repo.create_pending(
-            email=email_vo,
-            hashed_password=password_hash,
+            email=email_vo.value,
+            hashed_password=password_hash.value,
             otp_hash=otp_hash,
             ttl_seconds=self.ttl_seconds,
             max_attempts=self.max_attempts,

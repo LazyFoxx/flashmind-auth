@@ -32,11 +32,11 @@ class FinishRegistrationUseCase:
         self.max_attempts = max_attempts
 
     async def execute(self, input_dto: VerifyCodeDTO) -> AuthResponseDTO:
-        email = str(Email(input_dto.email))
+        email_vo = Email.create(input_dto.email)
         user_otp = input_dto.code
 
         # получаем хеш отпрвленного кода для сравнения
-        user_data = await self.verification_code_repo.get_pending(email=email)
+        user_data = await self.verification_code_repo.get_pending(email=email_vo.value)
 
         # Проверяем наличие pending registration в редис
         if user_data is None:
@@ -52,7 +52,7 @@ class FinishRegistrationUseCase:
                 current_attempts,
                 remaining_attempts,
             ) = await self.verification_code_repo.increment_and_check(
-                email, limit_attempts=self.max_attempts
+                email_vo.value, limit_attempts=self.max_attempts
             )
 
             if not is_allowed:
@@ -69,7 +69,7 @@ class FinishRegistrationUseCase:
         # Если коды совпадают то добавляем пользователя в бд и возвращаем токены
         user = User(
             id=uuid4(),
-            email=Email(email),
+            email=email_vo,
             hashed_password=HashedPassword(user_data.hashed_password),
         )
         async with self.uow:

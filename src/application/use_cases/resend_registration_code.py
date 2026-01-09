@@ -8,6 +8,7 @@ from src.application.interfaces import (
 from src.domain.value_objects import Email
 
 from src.application.exceptions import CooldownEmailError, RequestExpiredError
+from fastapi import BackgroundTasks
 
 
 class ResendRegistrationCodeUseCase:
@@ -17,6 +18,7 @@ class ResendRegistrationCodeUseCase:
         verification_code_repo: AbstractVerificationCodeRepository,
         rate_limit_repo: AbstractRateLimitRepository,
         email_sender: AbstractEmailSender,
+        background_tasks: BackgroundTasks,
         ttl_seconds,
         max_attempts,
         resend_code_cooldown_seconds,
@@ -28,9 +30,10 @@ class ResendRegistrationCodeUseCase:
         self.ttl_seconds = ttl_seconds
         self.max_attempts = max_attempts
         self.resend_code_cooldown_seconds = resend_code_cooldown_seconds
+        self.background_tasks = background_tasks
 
     async def execute(self, email) -> None:
-        email_vo = str(Email(email))
+        email_vo = Email.create(email)
 
         user_data = await self.verification_code_repo.get_pending(email=email)
 
@@ -40,7 +43,7 @@ class ResendRegistrationCodeUseCase:
 
         # проверяем rate limit на отправвку email
         check_cooldown = self.rate_limit_repo.check_and_set_cooldown(
-            email=email_vo, cooldown=self.resend_code_cooldown_seconds
+            email=email_vo.value, cooldown=self.resend_code_cooldown_seconds
         )
         if not check_cooldown:
             raise CooldownEmailError(
@@ -50,13 +53,15 @@ class ResendRegistrationCodeUseCase:
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)
         # Отправляем код верификации на email пользователя
-        await self.email_sender.send_register_verification_code(email_vo, otp)
+        await self.email_sender.send_register_verification_code(
+            email_vo.value, otp, background_tasks=self.background_tasks
+        )
         # Хешируем код для безопасности
         otp_hash = self.hasher.hash(otp)
 
         # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
         await self.verification_code_repo.create_pending(
-            email=email_vo,
+            email=email_vo.value,
             hashed_password=user_data.hashed_password,
             otp_hash=otp_hash,
             ttl_seconds=self.ttl_seconds,
