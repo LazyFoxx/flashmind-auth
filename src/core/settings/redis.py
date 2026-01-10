@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import RedisDsn, SecretStr
+from pydantic import SecretStr
 
 
 class RedisSettings(BaseSettings):
@@ -13,6 +13,7 @@ class RedisSettings(BaseSettings):
         env_prefix="REDIS_", case_sensitive=False, extra="ignore"
     )
 
-    def get_url(self) -> RedisDsn:
-        password = f"{self.password.get_secret_value()}"
-        return RedisDsn(f"redis://:{password}@{self.host}:{self.port}/{self.db}")
+    def get_url(self) -> str:
+        # password = f"{self.password.get_secret_value()}"
+        # return f"redis://:{password}@{self.host}:{self.port}/{self.db}"
+        return f"redis://{self.host}:{self.port}/{self.db}"

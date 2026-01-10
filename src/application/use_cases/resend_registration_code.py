@@ -19,7 +19,6 @@ class ResendRegistrationCodeUseCase:
         verification_code_repo: AbstractVerificationCodeRepository,
         rate_limit_repo: AbstractRateLimitRepository,
         email_sender: AbstractEmailSender,
-        background_tasks: BackgroundTasks,
         verification_code_cfg: VerificationCodeConfig,
         rate_limit_cgf: RateLimitConfig,
     ):
@@ -30,9 +29,8 @@ class ResendRegistrationCodeUseCase:
         self.ttl_seconds = verification_code_cfg.ttl_seconds
         self.max_attempts = verification_code_cfg.max_attempts
         self.resend_code_cooldown_seconds = rate_limit_cgf.resend_code_cooldown_seconds
-        self.background_tasks = background_tasks
 
-    async def execute(self, email) -> None:
+    async def execute(self, email, background_tasks: BackgroundTasks) -> None:
         email_vo = Email.create(email)
 
         user_data = await self.verification_code_repo.get_pending(email=email)
@@ -54,7 +52,7 @@ class ResendRegistrationCodeUseCase:
         otp = str(secrets.randbelow(899000) + 100000)
         # Отправляем код верификации на email пользователя
         await self.email_sender.send_register_verification_code(
-            email_vo.value, otp, background_tasks=self.background_tasks
+            email_vo.value, otp, background_tasks=background_tasks
         )
         # Хешируем код для безопасности
         otp_hash = self.hasher.hash(otp)

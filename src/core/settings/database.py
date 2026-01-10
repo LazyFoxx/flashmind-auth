@@ -28,7 +28,7 @@ class DatabaseSettings(BaseSettings):
             password=self.password.get_secret_value(),  # получаем str из SecretStr
             host=self.host,
             port=self.port,
-            path=f"/{self.db}",
+            path=self.db,
         )
 
         return dsn

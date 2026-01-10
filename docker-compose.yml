@@ -47,9 +47,9 @@ services:
       - .env.dev
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-    command: >
-      redis-server
+    command: redis-server
       --appendonly yes
+      --requirepass "${REDIS_PASSWORD}"
     volumes:
       - redis_data_dev:/data
     ports:
