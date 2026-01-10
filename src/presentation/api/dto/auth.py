@@ -6,19 +6,8 @@ class RegisterRequest(BaseModel):
     password: str = Field(..., min_length=8)
 
 
-class EmailVerificationSentResponse(BaseModel):
-    message: str = "Код подтверждения отправлен на email"
-    expires_in: int  # в секундах
-
-    # Можно добавить пример для документации
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "message": "Код подтверждения отправлен на email",
-                "expires_in": 1800,
-            }
-        }
-    }
+class MessageResponse(BaseModel):
+    message: str = Field(..., description="Информационное сообщение для клиента")
 
 
 class EmailVerificationRequest(BaseModel):

@@ -5,6 +5,7 @@ class ApplicationError(Exception):
 class EmailAlreadyExistsError(ApplicationError):
     """Пользователь с таким email уже существует"""
 
+    email: str
     pass
 
 

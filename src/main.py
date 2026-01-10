@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from src.infrastructure.di.container import get_container
 from dishka.integrations.fastapi import setup_dishka
 from src.presentation.api.routers.router import api_router
+from src.presentation.exception_handlers import setup_exception_handlers
 
 container = get_container()
 
@@ -20,3 +21,4 @@ app = FastAPI(lifespan=lifespan)
 
 setup_dishka(container, app=app)
 app.include_router(api_router)
+setup_exception_handlers(app)
