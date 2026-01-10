@@ -40,13 +40,11 @@ class ResendRegistrationCodeUseCase:
             raise RequestExpiredError(str("Запрос истек. Начните регистрацию заново"))
 
         # проверяем rate limit на отправвку email
-        check_cooldown = self.rate_limit_repo.check_and_set_cooldown(
+        check_cooldown = await self.rate_limit_repo.check_and_set_cooldown(
             email=email_vo.value, cooldown=self.resend_code_cooldown_seconds
         )
         if not check_cooldown:
-            raise CooldownEmailError(
-                "Пожалуйста подождите пока будет допустимо отправить новый код"
-            )
+            raise CooldownEmailError("Слишком частые запросы, повторите через минуту")
 
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)

@@ -3,7 +3,11 @@ import secrets
 from fastapi import BackgroundTasks
 from src.core.settings import VerificationCodeConfig, RateLimitConfig
 from src.application.dtos import AuthCredentialsDTO
-from src.application.exceptions import EmailAlreadyExistsError, RateLimitExceededError
+from src.application.exceptions import (
+    EmailAlreadyExistsError,
+    RateLimitExceededError,
+    CooldownEmailError,
+)
 from src.application.interfaces import (
     AbstractEmailSender,
     AbstractHasher,
@@ -36,6 +40,7 @@ class InitiateRegistrationUseCase:
         )
         self.ttl_seconds = verification_code_cfg.ttl_seconds
         self.max_attempts = verification_code_cfg.max_attempts
+        self.resend_code_cooldown_seconds = rate_limit_cgf.resend_code_cooldown_seconds
 
     async def execute(
         self, input_dto: AuthCredentialsDTO, background_tasks: BackgroundTasks
@@ -46,17 +51,28 @@ class InitiateRegistrationUseCase:
         # Проверка уникальности email
         async with self.uow:
             if await self.uow.users.get_by_email(email_vo.value):
-                raise EmailAlreadyExistsError(email_vo.value)
+                raise EmailAlreadyExistsError("Email уже зарегистрирован")
+
+            await self.uow.commit()
 
         # Rate limiting
-        is_allowed, _, remaining = await self.rate_limit_repo.increment_and_check(
+        is_allowed, _, _ = await self.rate_limit_repo.increment_and_check(
             email=email_vo.value,
             prefix="register",
             limit_attempts=self.register_email_limit,
             window_seconds=self.register_email_window_seconds,
         )
         if not is_allowed:
-            raise RateLimitExceededError(remaining)
+            raise RateLimitExceededError(
+                "Слишком много попыток регистрации, повторите через час"
+            )
+
+        # проверяем rate limit на отправвку email
+        created = await self.rate_limit_repo.check_and_set_cooldown(
+            email=email_vo.value, cooldown=self.resend_code_cooldown_seconds
+        )
+        if not created:
+            raise CooldownEmailError("Слишком частые попытки, повторите через минуту")
 
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)
@@ -66,7 +82,6 @@ class InitiateRegistrationUseCase:
         )
         # Хешируем код для безопасности
         otp_hash = self.hasher.hash(otp)
-
         # Сохраняет временные данные о регистрации  в Redis (email, password_hash, otp_hash)
         await self.verification_code_repo.create_pending(
             email=email_vo.value,

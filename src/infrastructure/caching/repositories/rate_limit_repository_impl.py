@@ -31,7 +31,5 @@ class RateLimitRepository(AbstractRateLimitRepository):
 
     async def check_and_set_cooldown(self, email: str, cooldown: int) -> bool:
         key = f"cooldown:{email.lower()}"
-
-        created = self.redis.set(key, "1", ex=cooldown, nx=True)
-
+        created = await self.redis.set(key, "1", ex=cooldown, nx=True)
         return created is True

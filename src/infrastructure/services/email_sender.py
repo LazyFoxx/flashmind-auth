@@ -19,6 +19,7 @@ class ResendEmailSender(AbstractEmailSender):
         resend.api_key = settings.resend_api_key
         self.from_email = settings.from_email
         self.from_name = settings.from_name
+        self.dev = settings.dev
 
     async def _send_email(
         self,
@@ -83,7 +84,13 @@ class ResendEmailSender(AbstractEmailSender):
         code: str,
         background_tasks: Optional[BackgroundTasks] = None,
     ) -> None:
-        """Отправка кода верификации при регистрации"""
+        """Отправка кода верификации при регистрации на email
+        если settings.dev = True то отправляет в консоль"""
+
+        if self.dev:  # не отправляет на email и выводит код в консоль
+            print(code)
+            return None
+
         subject = "FlashMind — подтвердите email"
         plain_text = (
             f"Ваш код подтверждения: {code}\n\n"

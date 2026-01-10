@@ -9,3 +9,4 @@ class EmailSettings(BaseSettings):
     from_email: str
     from_name: str
     resend_api_key: str
+    dev: bool
