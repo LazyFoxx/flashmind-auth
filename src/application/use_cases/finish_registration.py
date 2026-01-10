@@ -1,4 +1,5 @@
 from uuid import uuid4
+from src.core.settings import VerificationCodeConfig
 from src.application.dtos import VerifyCodeDTO, AuthResponseDTO
 from src.application.interfaces import (
     AbstractHasher,
@@ -23,13 +24,13 @@ class FinishRegistrationUseCase:
         verification_code_repo: AbstractVerificationCodeRepository,
         authentication: AbstractAuthenticationService,
         uow: AbstractUnitOfWork,
-        max_attempts,
+        verification_code_cfg: VerificationCodeConfig,
     ):
         self.hasher = hasher
         self.verification_code_repo = verification_code_repo
         self.authentication = authentication
         self.uow = uow
-        self.max_attempts = max_attempts
+        self.max_attempts = verification_code_cfg.max_attempts
 
     async def execute(self, input_dto: VerifyCodeDTO) -> AuthResponseDTO:
         email_vo = Email.create(input_dto.email)

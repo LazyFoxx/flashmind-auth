@@ -1,5 +1,5 @@
 import secrets
-
+from src.core.settings import VerificationCodeConfig, RateLimitConfig
 from fastapi import BackgroundTasks
 from src.application.dtos import AuthCredentialsDTO
 from src.application.exceptions import EmailAlreadyExistsError, RateLimitExceededError
@@ -22,20 +22,20 @@ class InitiateRegistrationUseCase:
         email_sender: AbstractEmailSender,
         uow: AbstractUnitOfWork,
         background_tasks: BackgroundTasks,
-        register_email_limit,
-        register_email_window_seconds,
-        ttl_seconds,
-        max_attempts,
+        verification_code_cfg: VerificationCodeConfig,
+        rate_limit_cgf: RateLimitConfig,
     ):
         self.hasher = hasher
         self.rate_limit_repo = rate_limit_repo
         self.verification_code_repo = verification_code_repo
         self.email_sender = email_sender
         self.uow = uow
-        self.register_email_limit = register_email_limit
-        self.register_email_window_seconds = register_email_window_seconds
-        self.ttl_seconds = ttl_seconds
-        self.max_attempts = max_attempts
+        self.register_email_limit = rate_limit_cgf.register_email_limit
+        self.register_email_window_seconds = (
+            rate_limit_cgf.register_email_window_seconds
+        )
+        self.ttl_seconds = verification_code_cfg.ttl_seconds
+        self.max_attempts = verification_code_cfg.max_attempts
         self.background_tasks = background_tasks
 
     async def execute(self, input_dto: AuthCredentialsDTO) -> None:

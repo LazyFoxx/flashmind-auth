@@ -1,4 +1,5 @@
 import secrets
+from src.core.settings import VerificationCodeConfig, RateLimitConfig
 from src.application.interfaces import (
     AbstractHasher,
     AbstractVerificationCodeRepository,
@@ -19,17 +20,16 @@ class ResendRegistrationCodeUseCase:
         rate_limit_repo: AbstractRateLimitRepository,
         email_sender: AbstractEmailSender,
         background_tasks: BackgroundTasks,
-        ttl_seconds,
-        max_attempts,
-        resend_code_cooldown_seconds,
+        verification_code_cfg: VerificationCodeConfig,
+        rate_limit_cgf: RateLimitConfig,
     ):
         self.hasher = hasher
         self.verification_code_repo = verification_code_repo
         self.rate_limit_repo = rate_limit_repo
         self.email_sender = email_sender
-        self.ttl_seconds = ttl_seconds
-        self.max_attempts = max_attempts
-        self.resend_code_cooldown_seconds = resend_code_cooldown_seconds
+        self.ttl_seconds = verification_code_cfg.ttl_seconds
+        self.max_attempts = verification_code_cfg.max_attempts
+        self.resend_code_cooldown_seconds = rate_limit_cgf.resend_code_cooldown_seconds
         self.background_tasks = background_tasks
 
     async def execute(self, email) -> None:

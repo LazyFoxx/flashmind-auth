@@ -1,4 +1,4 @@
-from dishka import FromDishka, Provider, Scope, provide
+from dishka import Provider, Scope, provide
 from src.core.settings import (
     VerificationCodeConfig,
     RateLimitConfig,
@@ -34,35 +34,3 @@ class ConfigProvider(Provider):
     @provide(scope=Scope.APP)
     def email_settings(self) -> EmailSettings:
         return EmailSettings()
-
-    # Отдельные примитивы
-    # rate limit
-    @provide(scope=Scope.APP)
-    def register_email_window_seconds(self, rl: RateLimitConfig = FromDishka()) -> int:
-        return rl.register_email_window_seconds
-
-    @provide(scope=Scope.APP)
-    def login_email_limit(self, rl: RateLimitConfig = FromDishka()) -> int:
-        return rl.login_email_limit
-
-    @provide(scope=Scope.APP)
-    def login_email_window_seconds(self, rl: RateLimitConfig = FromDishka()) -> int:
-        return rl.login_email_window_seconds
-
-    @provide(scope=Scope.APP)
-    def resend_code_cooldown_seconds(self, rl: RateLimitConfig = FromDishka()) -> int:
-        return rl.resend_code_cooldown_seconds
-
-    # verification code
-
-    @provide(scope=Scope.APP)
-    def verification_code_max_attempts(
-        self, vc: VerificationCodeConfig = FromDishka()
-    ) -> int:
-        return vc.max_attempts
-
-    @provide(scope=Scope.APP)
-    def verification_code_ttl_seconds(
-        self, vc: VerificationCodeConfig = FromDishka()
-    ) -> int:
-        return vc.ttl_seconds
