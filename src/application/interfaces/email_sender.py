@@ -1,31 +1,19 @@
-# src/application/interfaces/email_sender.py
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any
+from typing import Optional
+from fastapi import BackgroundTasks
 
 
 class AbstractEmailSender(ABC):
     """
-    Абстрактный сервис отправки email.
-    Используется для верификации email, сброса пароля, уведомлений и т.д.
+    Используется для верификации email, сброса пароля посредством отправки кода.
     """
 
     @abstractmethod
-    async def send(
-        self,
-        to: str | List[str],
-        subject: str,
-        plain_text: str,
-        html: str | None = None,
-        template_data: Dict[str, Any] | None = None,
+    async def send_register_verification_code(
+        self, email: str, code: str, background_tasks: Optional[BackgroundTasks] = None
     ) -> None:
         """
-        Отправляет email
+        Отправляет email с кодом верификации фоново через BackgroundTasks
 
-        Args:
-            to: один адрес или список
-            subject: тема письма
-            plain_text: текстовая версия
-            html: HTML-версия (опционально)
-            template_data: данные для шаблонизатора (если используешь)
         """
         ...

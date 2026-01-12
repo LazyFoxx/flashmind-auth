@@ -18,7 +18,9 @@ services:
     depends_on:
       - auth-postgres-dev
       - auth-redis-dev
-      - auth-mailpit
+    secrets:
+      - jwt_private_key
+      - jwt_public_key
     networks:
       - auth-network
     # Переопределяем CMD для включения reload
@@ -41,21 +43,17 @@ services:
     image: redis:7-alpine
     container_name: auth-redis-dev
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    env_file:
+      - .env.dev
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: redis-server
+      --appendonly yes
+      --requirepass "${REDIS_PASSWORD}"
     volumes:
       - redis_data_dev:/data
     ports:
       - "6380:6379"
-    networks:
-      - auth-network
-
-  auth-mailpit:
-    image: axllent/mailpit:latest
-    container_name: auth-mailpit-dev
-    restart: unless-stopped
-    ports:
-      - "8025:8025"  # UI: http://localhost:8025
-      - "1025:1025"   # SMTP
     networks:
       - auth-network
 
@@ -98,3 +96,9 @@ volumes:
 networks:
   auth-network:
     driver: bridge
+
+secrets:
+  jwt_private_key:
+    file: ./keys/private_key.pem        # ← просто берёт файл с хоста
+  jwt_public_key:
+    file: ./keys/public_key.pem

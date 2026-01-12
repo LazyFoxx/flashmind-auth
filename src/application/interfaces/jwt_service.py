@@ -1,6 +1,4 @@
-# src/application/interfaces/jwt_service.py
 from abc import ABC, abstractmethod
-from datetime import timedelta
 from typing import Dict, Any, Optional
 from uuid import UUID
 
@@ -13,7 +11,6 @@ class AbstractJWTService(ABC):
         self,
         user_id: UUID,
         extra_claims: Optional[Dict[str, Any]] = None,
-        expires_delta: Optional[timedelta] = None,
     ) -> str:
         """
         Создаёт access-токен (короткоживущий)
@@ -21,7 +18,6 @@ class AbstractJWTService(ABC):
         Args:
             user_id: ID пользователя
             extra_claims: дополнительные claims (roles, permissions и т.д.)
-            expires_delta: кастомное время жизни
         """
         ...
 
@@ -29,11 +25,12 @@ class AbstractJWTService(ABC):
     def create_refresh_token(
         self,
         user_id: UUID,
-        token_jti: Optional[str] = None,  # уникальный ID токена для ротации
-        expires_delta: Optional[timedelta] = None,
     ) -> str:
         """
         Создаёт refresh-токен (долгоживущий, с jti)
+
+        Args:
+            user_id: ID пользователя
         """
         ...
 

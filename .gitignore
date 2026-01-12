@@ -66,4 +66,4 @@ coverage.xml
 *.log
 *.sqlite3
 
-**/__init__.py
+keys/

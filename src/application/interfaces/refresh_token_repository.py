@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from datetime import timedelta
 from uuid import UUID
 
 
@@ -14,7 +13,6 @@ class AbstractRefreshTokenRepository(ABC):
         self,
         user_id: UUID,
         token_jti: str,
-        expires_in: timedelta,
     ) -> None:
         """Сохранить новый действующий refresh-токен для пользователя.
 
@@ -23,19 +21,22 @@ class AbstractRefreshTokenRepository(ABC):
         Args:
             user_id: ID пользователя
             token_jti: Уникальный идентификатор токена (jti claim)
-            expires_in: Время жизни токена
         """
         ...
 
     @abstractmethod
     async def get_user_id_by_jti(self, token_jti: str) -> UUID | None:
-        """Получить ID пользователя по jti refresh-токена.
+        """Атомарная операция:
+        1. Возвращает данные токена (user_id, expires_at), если он существует
+        2. Немедленно удаляет его из хранилища (поддержка rotation)
 
-        Если токен не найден или истёк — возвращает None.
+        Возвращает None, если токен уже был использован или не существует.
         """
         ...
 
     @abstractmethod
     async def revoke_by_user_id(self, user_id: UUID) -> None:
-        """Отозвать текущий refresh-токен пользователя (например, при logout)."""
+        """
+        Отзыв текущей сессии пользователя (logout или смена пароля).
+        """
         ...

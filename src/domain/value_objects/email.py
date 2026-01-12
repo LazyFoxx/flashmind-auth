@@ -1,8 +1,7 @@
-# src/domain/value_objects/email.py
 from __future__ import annotations
 from email_validator import validate_email, EmailNotValidError
 from dataclasses import dataclass
-from domain.exceptions import InvalidEmailError
+from src.domain.exceptions import InvalidEmailError
 
 
 @dataclass(frozen=True, slots=True)

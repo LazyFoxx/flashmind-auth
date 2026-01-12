@@ -1,9 +1,9 @@
-# src/application/interfaces/user_repository.py
 from abc import ABC, abstractmethod
 from typing import Optional
 from uuid import UUID
 
-from domain.entities.user import User
+
+from src.domain.entities.user import User
 
 
 class AbstractUserRepository(ABC):
@@ -16,17 +16,12 @@ class AbstractUserRepository(ABC):
 
         Returns:
             Объект User, если найден, иначе None
-
-        Raises:
-            DatabaseError: если произошла ошибка при обращении к БД (опционально в реализации)
         """
         ...
 
     @abstractmethod
     async def get_by_email(self, email: str) -> Optional[User]:
         """Получить пользователя по email (уникальному).
-
-        Email приводится к нижнему регистру перед поиском.
 
         Args:
             email: Email пользователя (будет нормализован)
@@ -49,20 +44,6 @@ class AbstractUserRepository(ABC):
         Raises:
             IntegrityError: если email уже занят
         """
-        ...
-
-    @abstractmethod
-    async def update(self, user: User) -> None:
-        """Обновить данные существующего пользователя.
-
-        Args:
-            user: Объект User с обновлёнными полями. ID должен быть валидным.
-        """
-        ...
-
-    @abstractmethod
-    async def set_active(self, user_id: UUID, is_active: bool) -> None:
-        """Активировать или деактивировать пользователя."""
         ...
 
     @abstractmethod
