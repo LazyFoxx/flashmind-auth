@@ -10,6 +10,10 @@ class EmailAlreadyExistsError(ApplicationError):
         self.email = email
 
 
+class InvalidCredentialsError(ApplicationError):
+    "неверные данные ( чаще всего логин или пароль при login)"
+
+
 class CooldownEmailError(ApplicationError):
     """Кулдаун имейла еще не истек"""
 

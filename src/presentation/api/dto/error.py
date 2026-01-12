@@ -41,7 +41,7 @@ class RateLimitExceededResponse(BaseModel):
         "json_schema_extra": {
             "example": {
                 "error": "RateLimitExceeded",
-                "message": "Слишком много попыток регистрации, повторите через час",
+                "message": "Слишком много попыток, повторите через час",
             }
         }
     }
@@ -86,6 +86,20 @@ class RegisterRequestExpiredResponse(BaseModel):
             "example": {
                 "error": "RegisterRequestExpired",
                 "message": "Запрос истек, начните регистрацию заново",
+            }
+        }
+    }
+
+
+class InvalideCredentialResponse(BaseModel):
+    error: str = "InvalideCredential"
+    message: str
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "error": "InvalideCredential",
+                "message": "Неверный логин или пароль",
             }
         }
     }

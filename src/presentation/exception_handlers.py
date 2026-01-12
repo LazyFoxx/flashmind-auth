@@ -5,6 +5,7 @@ from src.application.exceptions import (
     CodeAttemptError,
     LimitCodeAttemptsError,
     RegisterRequestExpiredError,
+    InvalidCredentialsError,
 )
 
 from fastapi import FastAPI, Request
@@ -74,6 +75,16 @@ async def rate_limit_exceed_handler(request: Request, exc: RateLimitExceededErro
     )
 
 
+async def invalide_credentional_handler(request: Request, exc: InvalidCredentialsError):
+    return JSONResponse(
+        status_code=401,
+        content={
+            "error": "InvalideCredential",
+            "message": str(exc),
+        },
+    )
+
+
 def setup_exception_handlers(app: FastAPI):
     """Единая регистрация всех обработчиков ошибок."""
     app.add_exception_handler(EmailAlreadyExistsError, email_exists_handler)  # type: ignore[arg-type]
@@ -82,3 +93,4 @@ def setup_exception_handlers(app: FastAPI):
     app.add_exception_handler(CodeAttemptError, code_attempts_handler)  # type: ignore[arg-type]
     app.add_exception_handler(LimitCodeAttemptsError, limit_code_attempts_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RegisterRequestExpiredError, register_expired_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(InvalidCredentialsError, invalide_credentional_handler)  # type: ignore[arg-type]

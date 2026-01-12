@@ -1,3 +1,4 @@
+import asyncio
 from src.application.interfaces import (
     AbstractHasher,
     AbstractUnitOfWork,
@@ -10,6 +11,7 @@ from src.core.settings import RateLimitConfig
 
 from src.application.exceptions import (
     RateLimitExceededError,
+    InvalidCredentialsError,
 )
 
 
@@ -31,17 +33,14 @@ class LoginCodeUseCase:
 
     async def execute(self, input_dto: AuthCredentialsDTO) -> AuthResponseDTO:
         email_vo = Email.create(input_dto.email)
-        # password_hash = HashedPassword(
-        #     await asyncio.to_thread(self.hasher.hash, input_dto.password)
-        # )
 
         # ищем пользователя в БД
         async with self.uow:
             user = await self.uow.users.get_by_email(email_vo.value)
             await self.uow.commit()
-
+        # Если пользователь не найден (проверка email)
         if user is None:
-            raise Exception
+            raise InvalidCredentialsError("Неверный логин или пароль")
 
         # Rate limiting
         is_allowed, _, _ = await self.rate_limit_repo.increment_and_check(
@@ -52,9 +51,18 @@ class LoginCodeUseCase:
         )
         if not is_allowed:
             raise RateLimitExceededError(
-                "Слишком много попыток регистрации, повторите попытку позже"
+                "Слишком много попыток авторизации, попробуйте позже"
             )
 
+        # проверяем пароль
+        result = await asyncio.to_thread(
+            self.hasher.verify, input_dto.password, user.hashed_password.value
+        )
+
+        if not result:
+            raise InvalidCredentialsError("Неверный логин или пароль")
+
+        # если все проверки пройдены
         # генерируем токены доступа и сохраняем refresh в редис
         (
             access_token,

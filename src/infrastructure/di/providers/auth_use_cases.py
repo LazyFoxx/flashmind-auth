@@ -4,6 +4,7 @@ from src.application.use_cases import (
     InitiateRegistrationUseCase,
     FinishRegistrationUseCase,
     ResendRegistrationCodeUseCase,
+    LoginCodeUseCase,
 )
 
 
@@ -11,3 +12,4 @@ class AuthUseCaseProvider(Provider):
     initiate_registration = provide(InitiateRegistrationUseCase, scope=Scope.REQUEST)
     finish_registration = provide(FinishRegistrationUseCase, scope=Scope.REQUEST)
     resend_registration = provide(ResendRegistrationCodeUseCase, scope=Scope.REQUEST)
+    login = provide(LoginCodeUseCase, scope=Scope.REQUEST)
