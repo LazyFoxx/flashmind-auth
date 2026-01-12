@@ -9,6 +9,12 @@ class RegisterRequest(BaseModel):
 class MessageResponse(BaseModel):
     message: str = Field(..., description="Информационное сообщение для клиента")
 
+    model_config = {
+        "json_schema_extra": {
+            "example": {"message": "Код верификации успешно отправлен!"}
+        }
+    }
+
 
 class EmailVerificationRequest(BaseModel):
     email: EmailStr

@@ -80,7 +80,7 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
         # Сколько осталось попыток
         remaining_attempts = max(0, limit_attempts - current_attempts)
 
-        is_allowed = current_attempts <= limit_attempts
+        is_allowed = current_attempts < limit_attempts
 
         return is_allowed, current_attempts, remaining_attempts
 

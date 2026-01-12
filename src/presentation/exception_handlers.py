@@ -2,10 +2,44 @@ from src.application.exceptions import (
     EmailAlreadyExistsError,
     CooldownEmailError,
     RateLimitExceededError,
+    CodeAttemptError,
+    LimitCodeAttemptsError,
+    RegisterRequestExpiredError,
 )
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+
+
+async def register_expired_handler(request: Request, exc: RegisterRequestExpiredError):
+    return JSONResponse(
+        status_code=410,
+        content={
+            "error": "RegisterRequestExpired",
+            "message": str(exc),
+        },
+    )
+
+
+async def limit_code_attempts_handler(request: Request, exc: LimitCodeAttemptsError):
+    return JSONResponse(
+        status_code=429,
+        content={
+            "error": "LimitCodeAttempt",
+            "message": str(exc),
+        },
+    )
+
+
+async def code_attempts_handler(request: Request, exc: CodeAttemptError):
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": "CodeAttempt",
+            "message": str(exc),
+            "attempts": exc.remaining_attempts,
+        },
+    )
 
 
 async def email_exists_handler(request: Request, exc: EmailAlreadyExistsError):
@@ -25,6 +59,7 @@ async def cooldown_email_handler(request: Request, exc: CooldownEmailError):
         content={
             "error": "CooldownEmail",
             "message": str(exc),
+            "remaining_seconds": exc.remaining_seconds,
         },
     )
 
@@ -44,3 +79,6 @@ def setup_exception_handlers(app: FastAPI):
     app.add_exception_handler(EmailAlreadyExistsError, email_exists_handler)  # type: ignore[arg-type]
     app.add_exception_handler(CooldownEmailError, cooldown_email_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RateLimitExceededError, rate_limit_exceed_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(CodeAttemptError, code_attempts_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(LimitCodeAttemptsError, limit_code_attempts_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RegisterRequestExpiredError, register_expired_handler)  # type: ignore[arg-type]

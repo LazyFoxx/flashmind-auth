@@ -29,7 +29,19 @@ class RateLimitRepository(AbstractRateLimitRepository):
 
         return is_allowed, current_attempts, remaining_attempts
 
-    async def check_and_set_cooldown(self, email: str, cooldown: int) -> bool:
+    async def check_and_set_cooldown(
+        self, email: str, cooldown: int
+    ) -> Tuple[bool, int]:
         key = f"cooldown:{email.lower()}"
         created = await self.redis.set(key, "1", ex=cooldown, nx=True)
-        return created is True
+
+        if created:
+            return True, 0  # 0 потому что кулдаун только начался
+
+        # Смотрим сколько осталось проверка на всякий случай race condition
+        ms_left = await self.redis.pttl(key)
+        if ms_left <= 0:
+            return True, 0
+
+        seconds_left = (ms_left + 999) // 1000
+        return False, seconds_left

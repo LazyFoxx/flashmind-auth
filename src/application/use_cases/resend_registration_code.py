@@ -9,7 +9,7 @@ from src.application.interfaces import (
 )
 from src.domain.value_objects import Email
 
-from src.application.exceptions import CooldownEmailError, RequestExpiredError
+from src.application.exceptions import CooldownEmailError, RegisterRequestExpiredError
 from fastapi import BackgroundTasks
 
 
@@ -38,14 +38,16 @@ class ResendRegistrationCodeUseCase:
 
         # Проверяем наличие pending registration в редис
         if user_data is None:
-            raise RequestExpiredError(str("Запрос истек. Начните регистрацию заново"))
+            raise RegisterRequestExpiredError(
+                str("Запрос истек. Начните регистрацию заново")
+            )
 
-        # проверяем rate limit на отправвку кода на email
-        check_cooldown = await self.rate_limit_repo.check_and_set_cooldown(
+        # проверяем rate limit на отправвку email
+        created, seconds_left = await self.rate_limit_repo.check_and_set_cooldown(
             email=email_vo.value, cooldown=self.resend_code_cooldown_seconds
         )
-        if not check_cooldown:
-            raise CooldownEmailError("Слишком частые запросы, повторите через минуту")
+        if not created:
+            raise CooldownEmailError(remaining_seconds=seconds_left)
 
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)

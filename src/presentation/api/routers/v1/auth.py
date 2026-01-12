@@ -4,6 +4,7 @@ from dishka.integrations.fastapi import FromDishka, inject
 from src.application.use_cases import (
     InitiateRegistrationUseCase,
     FinishRegistrationUseCase,
+    ResendRegistrationCodeUseCase,
 )
 from src.application.dtos import AuthCredentialsDTO, VerifyCodeDTO
 from src.presentation.api.dto.auth import (
@@ -11,10 +12,15 @@ from src.presentation.api.dto.auth import (
     RegisterRequest,
     MessageResponse,
     RegistrationCompletedResponse,
+    ResendEmailVerificationRequest,
 )
 from src.presentation.api.dto.error import (
+    CooldownEmailResponse,
     EmailAlreadyExistsResponse,
     RateLimitExceededResponse,
+    CodeAttemptResponse,
+    LimitCodeAttemptsResponse,
+    RegisterRequestExpiredResponse,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -23,45 +29,23 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post(
     "/register",
     status_code=status.HTTP_202_ACCEPTED,
-    responses={
-        409: {
-            "model": EmailAlreadyExistsResponse,
-            "description": "Email уже занят",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "EmailAlreadyExists",
-                        "message": "User with this email already exists",
-                        "email": "user@example.com",
-                    }
-                }
-            },
-        },
-        429: {
-            "model": RateLimitExceededResponse,
-            "description": 'Слишком много попыток регистарции: "error": "RateLimitExceeded". \n Кулдаун отправки смс кода - "error": "CooldownEmail"',
-            "content": {
-                "application/json": {
-                    "example": {
-                        "error": "RateLimitExceeded",
-                        "message": "Too many attempts, please try again later",
-                    }
-                }
-            },
-        },
-        202: {
-            "model": MessageResponse,
-            "description": "Успех!",
-            "content": {
-                "application/json": {
-                    "example": {"message": "Код верификации успешно отправлен!"}
-                }
-            },
-        },
-    },
     summary="Начало регистрации пользователя",
     description=("Отправляет код подтверждения на указанный email. "),
     response_model=MessageResponse,
+    responses={
+        409: {
+            "model": EmailAlreadyExistsResponse,
+            "description": "Такой имейл уже используется",
+        },
+        429: {
+            "model": RateLimitExceededResponse,
+            "description": "Исчерпаны попытки регистрации",
+        },
+        202: {
+            "model": MessageResponse,
+            "description": "Успешная инициализация регистрации",
+        },
+    },
 )
 @inject
 async def initiate_registration(
@@ -91,6 +75,24 @@ async def initiate_registration(
         "Проверяет код → создаёт пользователя → выдаёт access token в теле и "
         "refresh token в httpOnly cookie"
     ),
+    responses={
+        400: {
+            "model": CodeAttemptResponse,
+            "description": "Неверный код подтверждения",
+        },
+        429: {
+            "model": LimitCodeAttemptsResponse,
+            "description": "Исчерпаны попытки ввести код правильно",
+        },
+        410: {
+            "model": RegisterRequestExpiredResponse,
+            "description": "Истёк срок действия запроса на регистрацию",
+        },
+        201: {
+            "model": RegistrationCompletedResponse,
+            "description": "Успешная регистрация",
+        },
+    },
 )
 @inject
 async def verify_registration(
@@ -124,14 +126,39 @@ async def verify_registration(
     )
 
 
-# @router.post(
-#     "/resend-verification",
-#     response_model=EmailVerificationSentResponse,
-#     status_code=status.HTTP_200_OK,
-# )
-# @inject
-# async def resend_verification(
-#     data: ResendEmailVerificationRequest,
-#     use_case: FromDishka[ResendRegistrationCodeUseCase],
-# ) -> EmailVerificationSentResponse:
-#     pass
+@router.post(
+    "/register/resend-code",
+    response_model=MessageResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Повторная отправка кода подтверждения",
+    description=("Отправляет код подтверждения на указанный email."),
+    responses={
+        410: {
+            "model": RegisterRequestExpiredResponse,
+            "description": "Истёк срок действия запроса на регистрацию",
+        },
+        429: {
+            "model": CooldownEmailResponse,
+            "description": "Слишком частый запрос на отправку кода",
+        },
+        202: {
+            "model": MessageResponse,
+            "description": "Код отправлен на email",
+        },
+    },
+)
+@inject
+async def resend_verify_code(
+    payload: ResendEmailVerificationRequest,
+    background_tasks: BackgroundTasks,
+    use_case: FromDishka[ResendRegistrationCodeUseCase],
+) -> MessageResponse:
+    """
+    Отправляет код подтверждения повторно:
+    - Проверяет что сессия регистрации еще действует
+    - Генерирует новый код и отправляет на email
+    - Удаляет старый код и попытки ввода!
+    """
+    email = payload.email
+    await use_case.execute(email=email, background_tasks=background_tasks)
+    return MessageResponse(message="Код верификации успешно отправлен!")

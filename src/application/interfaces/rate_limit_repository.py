@@ -18,12 +18,13 @@ class AbstractRateLimitRepository(ABC):
     ) -> Tuple[bool, int, int]:
         """
         Атомарно увеличивает счётчик и проверяет лимит.
+        в течении window_seconds может быть только limit_attempts попыток
 
         Args:
             email: уникальный идентификатор (email)
             prefix: register - для регистрации, login - для логина
-            limit_attempts: лимит попыток на window_seconds
-            window_seconds: время окна для регистрации
+            limit_attempts: лимит попыток
+            window_seconds: время окна для регистрации/логина
         Returns:
             (is_allowed: bool, current_attempts: int, remaining_attempts: int)
         """
@@ -34,15 +35,16 @@ class AbstractRateLimitRepository(ABC):
         self,
         email: str,
         cooldown: int,
-    ) -> bool:
+    ) -> Tuple[bool, int]:
         """
         Проверяет, прошёл ли cooldown, и если да — возвращает True
-        и устанавливает новый, иначе False.
+        и устанавливает новый, иначе False. Так же возвращает в секундах оставшийся cooldown
 
         Args:
             email: уникальный идентификатор (email)
 
         Returns:
             is_allowed: bool
+            remaining_cooldown: int
         """
         pass

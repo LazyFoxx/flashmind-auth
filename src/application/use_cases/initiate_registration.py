@@ -35,10 +35,8 @@ class InitiateRegistrationUseCase:
         self.verification_code_repo = verification_code_repo
         self.email_sender = email_sender
         self.uow = uow
-        self.register_email_limit = rate_limit_cgf.register_email_limit
-        self.register_email_window_seconds = (
-            rate_limit_cgf.register_email_window_seconds
-        )
+        self.register_limit = rate_limit_cgf.register_limit
+        self.register_window_seconds = rate_limit_cgf.register_window_seconds
         self.ttl_seconds = verification_code_cfg.ttl_seconds
         self.max_attempts = verification_code_cfg.max_attempts
         self.resend_code_cooldown_seconds = rate_limit_cgf.resend_code_cooldown_seconds
@@ -63,8 +61,8 @@ class InitiateRegistrationUseCase:
         is_allowed, _, _ = await self.rate_limit_repo.increment_and_check(
             email=email_vo.value,
             prefix="register",
-            limit_attempts=self.register_email_limit,
-            window_seconds=self.register_email_window_seconds,
+            limit_attempts=self.register_limit,
+            window_seconds=self.register_window_seconds,
         )
         if not is_allowed:
             raise RateLimitExceededError(
@@ -72,11 +70,11 @@ class InitiateRegistrationUseCase:
             )
 
         # проверяем rate limit на отправвку email
-        created = await self.rate_limit_repo.check_and_set_cooldown(
+        created, seconds_left = await self.rate_limit_repo.check_and_set_cooldown(
             email=email_vo.value, cooldown=self.resend_code_cooldown_seconds
         )
         if not created:
-            raise CooldownEmailError("Слишком частые попытки, повторите через минуту")
+            raise CooldownEmailError(remaining_seconds=seconds_left)
 
         # Генерируем код верификации
         otp = str(secrets.randbelow(899000) + 100000)

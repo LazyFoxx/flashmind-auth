@@ -14,7 +14,7 @@ from src.domain.value_objects import Email, HashedPassword
 from src.application.exceptions import (
     LimitCodeAttemptsError,
     CodeAttemptError,
-    RequestExpiredError,
+    RegisterRequestExpiredError,
 )
 
 
@@ -42,18 +42,19 @@ class FinishRegistrationUseCase:
 
         # Проверяем наличие pending registration в редис
         if user_data is None:
-            raise RequestExpiredError("Запрос истек. Начните регистрацию заново")
+            raise RegisterRequestExpiredError(
+                "Запрос истек. Начните регистрацию заново"
+            )
 
         # уменьшаем количество попыток
         (
             is_allowed,
-            current_attempts,
+            _,
             remaining_attempts,
         ) = await self.verification_code_repo.increment_and_check(
             email_vo.value, limit_attempts=self.max_attempts
         )
 
-        print(is_allowed, current_attempts, remaining_attempts)
         if not is_allowed:
             # если попытки исчерпаны возвращаем ошибку (запрет на попытки)
             raise LimitCodeAttemptsError(
@@ -67,15 +68,15 @@ class FinishRegistrationUseCase:
 
         if not check_code:
             # возвращаем ошибку что код не верный и указываем оставшиеся попытки
-            raise CodeAttemptError(
-                f"Неверный код, осталось {remaining_attempts} попыток"
-            )
+            raise CodeAttemptError(remaining_attempts=remaining_attempts)
 
         # Если коды совпадают то добавляем пользователя в бд и возвращаем токены
         user = User(
             id=uuid4(),
             email=email_vo,
             hashed_password=HashedPassword(user_data.hashed_password),
+            is_active=True,
+            email_verified=True,
         )
         async with self.uow:
             await self.uow.users.add(user)

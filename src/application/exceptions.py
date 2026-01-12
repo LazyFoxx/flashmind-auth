@@ -7,7 +7,23 @@ class EmailAlreadyExistsError(ApplicationError):
 
     def __init__(self, email: str):
         super().__init__(f"Email уже используется: {email}")
-        self.email = email  # удобно для обработчика / логирования
+        self.email = email
+
+
+class CooldownEmailError(ApplicationError):
+    """Кулдаун имейла еще не истек"""
+
+    def __init__(self, remaining_seconds: int):
+        super().__init__(f"Отправьте код позже: {remaining_seconds} секунды")
+        self.remaining_seconds = remaining_seconds
+
+
+class CodeAttemptError(ApplicationError):
+    """Неверный код"""
+
+    def __init__(self, remaining_attempts: int):
+        super().__init__(f"Неверный код, осталось попыток: {remaining_attempts}")
+        self.remaining_attempts = remaining_attempts
 
 
 class RateLimitExceededError(ApplicationError):
@@ -20,20 +36,8 @@ class LimitCodeAttemptsError(ApplicationError):
     pass
 
 
-class CodeAttemptError(ApplicationError):
-    """Неверный код"""
-
-    pass
-
-
-class RequestExpiredError(ApplicationError):
+class RegisterRequestExpiredError(ApplicationError):
     """ключ не найден - начать регистрацию заново"""
-
-    pass
-
-
-class CooldownEmailError(ApplicationError):
-    """Кулдаун имейла еще не истек"""
 
     pass
 
