@@ -13,7 +13,7 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
         self.redis = redis
 
     def _get_key_pending_reg(self, email: str) -> str:
-        return f"pending_registration:{str(email).lower()}"
+        return f"pending_data:{str(email).lower()}"
 
     def _get_key_increment_a_check(self, email: str) -> str:
         return f"verifi_code_attempts:{str(email).lower()}"
@@ -21,10 +21,10 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
     async def create_pending(
         self,
         email: str,
-        hashed_password: str,
         otp_hash: str,
         ttl_seconds: int,
         max_attempts: int,
+        hashed_password: Optional[str] = None,
     ) -> None:
         pending_key = self._get_key_pending_reg(email)
         attempts_key = self._get_key_increment_a_check(email)
@@ -89,5 +89,5 @@ class VerificationCodeRepository(AbstractVerificationCodeRepository):
         email: str,
     ) -> None:
         # если регистрация прошла успешно то удалям временные данные
-        self.redis.delete(self._get_key_pending_reg(email))
-        self.redis.delete(self._get_key_increment_a_check(email))
+        await self.redis.delete(self._get_key_pending_reg(email))
+        await self.redis.delete(self._get_key_increment_a_check(email))

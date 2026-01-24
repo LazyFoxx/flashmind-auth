@@ -1,4 +1,4 @@
-from dishka import Provider, Scope, provide
+from dishka import FromDishka, Provider, Scope, provide
 from src.core.settings import (
     VerificationCodeConfig,
     RateLimitConfig,
@@ -7,6 +7,7 @@ from src.core.settings import (
     JwtSettings,
     EmailSettings,
 )
+from authlib.jose import JsonWebKey
 
 
 class ConfigProvider(Provider):
@@ -34,3 +35,8 @@ class ConfigProvider(Provider):
     @provide(scope=Scope.APP)
     def email_settings(self) -> EmailSettings:
         return EmailSettings()
+
+    @provide(scope=Scope.APP)
+    def provide_public_key(self, settings: FromDishka[JwtSettings]) -> JsonWebKey:
+        with open(settings.public_key_path) as f:
+            return JsonWebKey.import_key(f.read(), {"kty": "RSA"})

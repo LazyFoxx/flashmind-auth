@@ -135,3 +135,61 @@ class ResendEmailSender(AbstractEmailSender):
             html=html,
             background_tasks=background_tasks,
         )
+
+    async def send_fogot_password_verification_code(
+        self,
+        email: str,
+        code: str,
+        background_tasks: Optional[BackgroundTasks] = None,
+    ) -> None:
+        """Отправка кода подтверждения сброса пароля на email
+        если settings.dev = True то отправляет в консоль"""
+
+        if self.dev:  # не отправляет на email и выводит код в консоль
+            print(code)
+            return None
+
+        subject = "FlashMind — сброс пароля"
+        plain_text = (
+            f"Ваш код подтверждения: {code}\n\n"
+            "Код действителен 10 минут.\n"
+            "Если это не вы — просто проигнорируйте письмо."
+        )
+
+        html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: system-ui, sans-serif; max-width: 560px; margin: 40px auto; color: #111;">
+    <h1 style="margin-bottom: 8px;">Добро пожаловать в FlashMind!</h1>
+    <p style="font-size: 16px; line-height: 1.5;">
+        Ваш код для подтверждения для сброса пароля:
+    </p>
+    <div style="
+        font-size: 32px;
+        font-weight: bold;
+        letter-spacing: 12px;
+        text-align: center;
+        background: #f8f9fa;
+        padding: 24px;
+        border-radius: 12px;
+        margin: 24px 0;
+    ">
+        {code}
+    </div>
+    <p style="color: #555; font-size: 14px;">
+        Код действителен <strong>10 минут</strong>.<br>
+        Если вы не запрашивали сброс пароля — просто проигнорируйте это письмо.
+    </p>
+</body>
+</html>"""
+
+        await self.send(
+            to=email,
+            subject=subject,
+            plain_text=plain_text,
+            html=html,
+            background_tasks=background_tasks,
+        )

@@ -10,6 +10,10 @@ class RateLimitConfig(BaseSettings):
     login_limit: int
     login_window_seconds: int
 
+    # Сброс пароля
+    reset_pass_limit: int
+    reset_pass_window_seconds: int
+
     # Resend verification code
     resend_code_cooldown_seconds: int
 

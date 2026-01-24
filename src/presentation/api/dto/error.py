@@ -41,7 +41,7 @@ class RateLimitExceededResponse(BaseModel):
         "json_schema_extra": {
             "example": {
                 "error": "RateLimitExceeded",
-                "message": "Слишком много попыток, повторите через час",
+                "message": "Слишком много попыток, повторите позже",
             }
         }
     }
@@ -77,15 +77,15 @@ class CodeAttemptResponse(BaseModel):
     }
 
 
-class RegisterRequestExpiredResponse(BaseModel):
-    error: str = "RegisterRequestExpired"
+class RequestExpiredResponse(BaseModel):
+    error: str = "RequestExpired"
     message: str
 
     model_config = {
         "json_schema_extra": {
             "example": {
-                "error": "RegisterRequestExpired",
-                "message": "Запрос истек, начните регистрацию заново",
+                "error": "RequestExpired",
+                "message": "Запрос истек, начните попытку заново",
             }
         }
     }

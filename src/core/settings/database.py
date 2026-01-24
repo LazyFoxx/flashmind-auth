@@ -32,3 +32,6 @@ class DatabaseSettings(BaseSettings):
         )
 
         return dsn
+
+
+settings = DatabaseSettings()

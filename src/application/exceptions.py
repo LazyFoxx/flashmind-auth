@@ -10,6 +10,14 @@ class EmailAlreadyExistsError(ApplicationError):
         self.email = email
 
 
+class UserNotFoundError(ApplicationError):
+    """Пользователь с таким Email не найден"""
+
+    def __init__(self, email: str):
+        super().__init__(f"Пользователь с таким email не найден: {email}")
+        self.email = email
+
+
 class InvalidCredentialsError(ApplicationError):
     "неверные данные ( чаще всего логин или пароль при login)"
 
@@ -40,8 +48,8 @@ class LimitCodeAttemptsError(ApplicationError):
     pass
 
 
-class RegisterRequestExpiredError(ApplicationError):
-    """ключ не найден - начать регистрацию заново"""
+class RequestExpiredError(ApplicationError):
+    """ключ не найден - начать регистрацию заново при регистрации или при сбросе пароля"""
 
     pass
 

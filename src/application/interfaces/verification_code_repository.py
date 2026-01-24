@@ -14,20 +14,20 @@ class PendingRegistrationData:
 
 class AbstractVerificationCodeRepository(ABC):
     """
-    Репозиторий для хранения и управления данными незавершённой регистрации.
+    Репозиторий для хранения и управления данными незавершённой работы с otp.
     """
 
     @abstractmethod
     async def create_pending(
         self,
         email: str,
-        hashed_password: str,
         otp_hash: str,
         ttl_seconds: int,
         max_attempts: int,
+        hashed_password: Optional[str] = None,
     ) -> None:
         """
-        Сохраняет данные pending-регистрации и устанавливает TTL.
+        Сохраняет данные pending по email и устанавливает TTL.
         Перезаписывает существующую запись (если пользователь начал регистрацию заново или отправил код повторно).
 
         Args:
@@ -45,7 +45,7 @@ class AbstractVerificationCodeRepository(ABC):
     @abstractmethod
     async def get_pending(self, email: str) -> Optional[PendingRegistrationData]:
         """
-        Возвращает данные pending-регистрации или None, если
+        Возвращает данные pending по email или None, если
         время ключа истекло или ключ удалили
 
         Args:

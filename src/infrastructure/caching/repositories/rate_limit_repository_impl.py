@@ -26,7 +26,6 @@ class RateLimitRepository(AbstractRateLimitRepository):
         remaining_attempts = max(0, limit_attempts - current_attempts)
 
         is_allowed = current_attempts <= limit_attempts
-        print(is_allowed, remaining_attempts, current_attempts)
 
         return is_allowed, current_attempts, remaining_attempts
 

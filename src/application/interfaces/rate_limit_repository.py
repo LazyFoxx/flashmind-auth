@@ -22,7 +22,7 @@ class AbstractRateLimitRepository(ABC):
 
         Args:
             email: уникальный идентификатор (email)
-            prefix: register - для регистрации, login - для логина
+            prefix: register - для регистрации, login - для логина reset_pass - для сброса пароля
             limit_attempts: лимит попыток
             window_seconds: время окна для регистрации/логина
         Returns:

@@ -1,11 +1,20 @@
-from .initiate_registration import InitiateRegistrationUseCase
-from .finish_registration import FinishRegistrationUseCase
-from .resend_registration_code import ResendRegistrationCodeUseCase
-from .login import LoginCodeUseCase
+from .register.initiate_registration import InitiateRegistrationUseCase
+from .register.finish_registration import FinishRegistrationUseCase
+from .register.resend_registration_code import ResendRegistrationCodeUseCase
+from .login.login import LoginCodeUseCase
+from .change_password.start_change_pass import StartChangePasswordUseCase
+from .change_password.verify_code_chenge_pass import VerifyCodeChangePasswordUseCase
+from .change_password.finish_change_pass import FinishChangePasswordUseCase
+from .change_password.resend_code_change_pass import ResendCodeChangePasswordUseCase
+
 
 __all__ = [
     "InitiateRegistrationUseCase",
     "FinishRegistrationUseCase",
     "ResendRegistrationCodeUseCase",
     "LoginCodeUseCase",
+    "StartChangePasswordUseCase",
+    "VerifyCodeChangePasswordUseCase",
+    "FinishChangePasswordUseCase",
+    "ResendCodeChangePasswordUseCase",
 ]

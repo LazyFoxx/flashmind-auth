@@ -1,6 +1,6 @@
 from dishka import Provider, Scope, provide
 from src.application.interfaces import AbstractJWTService
-from src.infrastructure.services.authlib_service import AuthlibJWTService
+from src.secure.authlib_service import AuthlibJWTService
 
 
 class JwtProvider(Provider):

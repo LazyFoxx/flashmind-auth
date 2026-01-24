@@ -64,3 +64,23 @@ class LoginResponse(BaseModel):
             }
         }
     }
+
+
+class TokenAccessResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int  # время жизни access-токена в секундах
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "token_type": "bearer",
+                "expires_in": 1800,
+            }
+        }
+    }
+
+
+class NewPasswordRequest(BaseModel):
+    password: str = Field(..., min_length=8)

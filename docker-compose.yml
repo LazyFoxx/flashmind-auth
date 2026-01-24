@@ -16,15 +16,19 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - auth-postgres-dev
-      - auth-redis-dev
+      auth-postgres-dev:
+        condition: service_healthy
+      auth-redis-dev:
+        condition: service_started
     secrets:
       - jwt_private_key
       - jwt_public_key
     networks:
       - auth-network
     # Переопределяем CMD для включения reload
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
+    command: sh -c "
+        alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
+        "
 
   auth-postgres-dev:
     image: postgres:16-alpine
@@ -38,6 +42,11 @@ services:
       - "5433:5432"  # другой порт, чтобы не конфликтовать с локальной БД
     networks:
       - auth-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth-redis-dev:
     image: redis:7-alpine

@@ -1,6 +1,6 @@
 from dishka import Provider, Scope, provide
 from src.application.interfaces import AbstractAuthenticationService
-from src.infrastructure.services.authentication_service import AuthenticationService
+from src.secure.authentication_service import AuthenticationService
 
 
 class AuthProvider(Provider):

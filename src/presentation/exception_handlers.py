@@ -4,19 +4,21 @@ from src.application.exceptions import (
     RateLimitExceededError,
     CodeAttemptError,
     LimitCodeAttemptsError,
-    RegisterRequestExpiredError,
+    RequestExpiredError,
     InvalidCredentialsError,
+    UserNotFoundError,
+    InvalidTokenError,
 )
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 
-async def register_expired_handler(request: Request, exc: RegisterRequestExpiredError):
+async def request_expired_handler(request: Request, exc: RequestExpiredError):
     return JSONResponse(
         status_code=410,
         content={
-            "error": "RegisterRequestExpired",
+            "error": "RequestExpired",
             "message": str(exc),
         },
     )
@@ -85,6 +87,25 @@ async def invalide_credentional_handler(request: Request, exc: InvalidCredential
     )
 
 
+async def user_not_found_handler(request: Request, exc: UserNotFoundError):
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": "Успех!",
+        },
+    )
+
+
+async def invalid_token(request: Request, exc: InvalidTokenError):
+    return JSONResponse(
+        status_code=401,
+        headers={"WWW-Authenticate": "Bearer"},
+        content={
+            "message": f"Неверный токен: {exc}",
+        },
+    )
+
+
 def setup_exception_handlers(app: FastAPI):
     """Единая регистрация всех обработчиков ошибок."""
     app.add_exception_handler(EmailAlreadyExistsError, email_exists_handler)  # type: ignore[arg-type]
@@ -92,5 +113,7 @@ def setup_exception_handlers(app: FastAPI):
     app.add_exception_handler(RateLimitExceededError, rate_limit_exceed_handler)  # type: ignore[arg-type]
     app.add_exception_handler(CodeAttemptError, code_attempts_handler)  # type: ignore[arg-type]
     app.add_exception_handler(LimitCodeAttemptsError, limit_code_attempts_handler)  # type: ignore[arg-type]
-    app.add_exception_handler(RegisterRequestExpiredError, register_expired_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(RequestExpiredError, request_expired_handler)  # type: ignore[arg-type]
     app.add_exception_handler(InvalidCredentialsError, invalide_credentional_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(UserNotFoundError, user_not_found_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(InvalidTokenError, invalid_token)  # type: ignore[arg-type]
