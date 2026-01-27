@@ -9,6 +9,15 @@ from src.application.exceptions import InvalidTokenError
 from src.application.interfaces.jwt_service import AbstractJWTService
 from src.core.settings.jwt import JwtSettings
 from uuid import uuid4
+from dataclasses import dataclass
+
+
+@dataclass
+class JWTKey:
+    kid: str
+    alg: str
+    public_key: JsonWebKey
+    private_key: JsonWebKey | None = None
 
 
 class AuthlibJWTService(AbstractJWTService):
@@ -32,12 +41,25 @@ class AuthlibJWTService(AbstractJWTService):
 
         self.jwt = JsonWebToken([self.alg])
 
-        # JWKS для публичного доступа
-        self.jwks = {
+        self.keys: list[JWTKey] = [
+            JWTKey(
+                kid=self.kid,
+                alg=self.alg,
+                public_key=self.private_key,
+                private_key=self.public_key,
+            )
+        ]
+
+    def _build_jwks(self, keys: list[JWTKey]) -> dict:
+        return {
             "keys": [
-                self.public_key.as_dict(
-                    private=False, kid=self.kid, use="sig", alg=self.alg
+                key.public_key.as_dict(
+                    private=False,
+                    kid=key.kid,
+                    use="sig",
+                    alg=key.alg,
                 )
+                for key in keys
             ]
         }
 
@@ -125,5 +147,5 @@ class AuthlibJWTService(AbstractJWTService):
         except JoseError as e:
             raise InvalidTokenError(f"Invalid refresh token: {e}")
 
-    def get_public_keys(self) -> Dict[str, Any]:
-        return self.jwks
+    def get_public_keys(self) -> dict:
+        return self._build_jwks(self.keys)

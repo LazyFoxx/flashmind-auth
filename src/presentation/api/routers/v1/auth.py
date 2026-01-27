@@ -12,11 +12,9 @@ from src.application.use_cases import (
     ResendRegistrationCodeUseCase,
     ResendCodeChangePasswordUseCase,
     FinishChangePasswordUseCase,
-)
-
-from src.application.use_cases import (
     InitiateRegistrationUseCase,
 )
+
 from src.application.dtos import AuthCredentialsDTO
 from src.presentation.api.dto.auth import (
     EmailVerificationRequest,

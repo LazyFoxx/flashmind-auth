@@ -9,6 +9,7 @@ from src.application.use_cases import (
     VerifyCodeChangePasswordUseCase,
     FinishChangePasswordUseCase,
     ResendCodeChangePasswordUseCase,
+    JWKSUseCase,
 )
 
 
@@ -25,3 +26,4 @@ class AuthUseCaseProvider(Provider):
     resend_code_change_password = provide(
         ResendCodeChangePasswordUseCase, scope=Scope.REQUEST
     )
+    jwks = provide(JWKSUseCase, scope=Scope.REQUEST)
