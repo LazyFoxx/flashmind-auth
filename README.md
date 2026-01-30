@@ -10,6 +10,12 @@ cd auth-service
 
 ```bash
 cp .env.dev.example .env.dev
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install typer
+
 python -m cli.main  # генерирует пару ключей RS256
 ```
 

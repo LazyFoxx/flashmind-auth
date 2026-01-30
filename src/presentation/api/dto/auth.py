@@ -30,38 +30,32 @@ class ResendEmailVerificationRequest(BaseModel):
     email: EmailStr
 
 
-class RegistrationCompletedResponse(BaseModel):
-    message: str = "Регистрация прошла успешно!"
-    access_token: str
-    token_type: str = "bearer"
-    expires_in: int  # время жизни access-токена в секундах
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "message": "Регистрация прошла успешно!",
-                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                "token_type": "bearer",
-                "expires_in": 1800,
-            }
-        }
-    }
-
-
 class LoginResponse(BaseModel):
     message: str = "Успешная авторизация!"
     access_token: str
     token_type: str = "bearer"
     expires_in: int  # время жизни access-токена в секундах
+    refresh_token: str | None = Field(
+        default=None,
+        description="Возвращается только для non-cookie клиентов (mobile / native)",
+        )   
 
     model_config = {
         "json_schema_extra": {
-            "example": {
-                "message": "Успешная авторизация!",
-                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-                "token_type": "bearer",
-                "expires_in": 1800,
-            }
+            "examples": [
+                {
+                    "access_token": "eyJ...",
+                    "token_type": "bearer",
+                    "expires_in": 1800,
+                    "refresh_token": None,
+                },
+                {
+                    "access_token": "eyJ...",
+                    "token_type": "bearer",
+                    "expires_in": 1800,
+                    "refresh_token": "def50200...",
+                },
+            ]
         }
     }
 
@@ -70,16 +64,29 @@ class TokenAccessResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     expires_in: int  # время жизни access-токена в секундах
+    refresh_token: str | None = Field(
+        default=None,
+        description="Возвращается только для non-cookie клиентов (mobile / native)",
+        )   
 
     model_config = {
-        "json_schema_extra": {
-            "example": {
-                "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "json_schema_extra": {
+        "examples": [
+            {
+                "access_token": "eyJ...",
                 "token_type": "bearer",
                 "expires_in": 1800,
-            }
-        }
+                "refresh_token": None,
+            },
+            {
+                "access_token": "eyJ...",
+                "token_type": "bearer",
+                "expires_in": 1800,
+                "refresh_token": "def50200...",
+            },
+        ]
     }
+}
 
 
 class NewPasswordRequest(BaseModel):
