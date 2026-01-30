@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Cookie, Depends, status, BackgroundTasks, Response
+from fastapi import APIRouter, Depends, status, BackgroundTasks, Response
 from dishka.integrations.fastapi import FromDishka, inject
 from src.secure.dependencies import get_current_user
 from src.domain.entities.user import User
@@ -28,7 +28,6 @@ from src.presentation.api.dto.error import (
 )
 
 router = APIRouter(tags=["reset_password"])
-
 
 
 @router.post(

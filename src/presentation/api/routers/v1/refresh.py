@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Cookie, HTTPException, status, Response, Body
 from dishka.integrations.fastapi import FromDishka, inject
-from src.secure.dependencies import get_current_user
 
 from src.application.use_cases import (
     FinishChangePasswordUseCase,
@@ -13,6 +12,7 @@ from src.presentation.api.dto.error import (
 )
 
 router = APIRouter(tags=["refresh token"])
+
 
 @router.post(
     "/refresh",
@@ -34,12 +34,11 @@ async def refresh(
     refresh_token_cookie: str | None = Cookie(default=None),
     refresh_token_body: str | None = Body(default=None, embed=True),
 ) -> TokenAccessResponse:
-    
     refresh_token = refresh_token_cookie or refresh_token_body
 
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Рефреш токен отсутствует")
-    
+
     tokens = await use_case.execute(refresh_token)
 
     if refresh_token_cookie:

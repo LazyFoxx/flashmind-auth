@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Cookie, Depends, status, Response
+from fastapi import APIRouter, status, Response
 from dishka.integrations.fastapi import FromDishka, inject
 
 from src.application.use_cases import (
@@ -61,6 +61,7 @@ async def login(
     )
 
     return LoginResponse(
-        access_token=tokens.access_token, expires_in=1800,
-        refresh_token=tokens.refresh_token
+        access_token=tokens.access_token,
+        expires_in=1800,
+        refresh_token=tokens.refresh_token,
     )

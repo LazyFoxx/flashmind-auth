@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Cookie, Depends, status, BackgroundTasks, Response
+from fastapi import APIRouter, status, BackgroundTasks, Response
 from dishka.integrations.fastapi import FromDishka, inject
 from src.application.dtos import VerifyCodeDTO
 
@@ -27,7 +27,6 @@ from src.presentation.api.dto.error import (
 
 
 router = APIRouter(tags=["register"])
-
 
 
 @router.post(
@@ -126,8 +125,9 @@ async def verify_registration(
     )
 
     return LoginResponse(
-        access_token=tokens.access_token, expires_in=1800,
-        refresh_token=tokens.refresh_token
+        access_token=tokens.access_token,
+        expires_in=1800,
+        refresh_token=tokens.refresh_token,
     )
 
 
@@ -167,4 +167,3 @@ async def resend_verify_code(
     email = payload.email
     await use_case.execute(email=email, background_tasks=background_tasks)
     return MessageResponse(message="Код верификации успешно отправлен!")
-

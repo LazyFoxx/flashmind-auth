@@ -38,7 +38,7 @@ class LoginResponse(BaseModel):
     refresh_token: str | None = Field(
         default=None,
         description="Возвращается только для non-cookie клиентов (mobile / native)",
-        )   
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -67,26 +67,26 @@ class TokenAccessResponse(BaseModel):
     refresh_token: str | None = Field(
         default=None,
         description="Возвращается только для non-cookie клиентов (mobile / native)",
-        )   
+    )
 
     model_config = {
-    "json_schema_extra": {
-        "examples": [
-            {
-                "access_token": "eyJ...",
-                "token_type": "bearer",
-                "expires_in": 1800,
-                "refresh_token": None,
-            },
-            {
-                "access_token": "eyJ...",
-                "token_type": "bearer",
-                "expires_in": 1800,
-                "refresh_token": "def50200...",
-            },
-        ]
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "access_token": "eyJ...",
+                    "token_type": "bearer",
+                    "expires_in": 1800,
+                    "refresh_token": None,
+                },
+                {
+                    "access_token": "eyJ...",
+                    "token_type": "bearer",
+                    "expires_in": 1800,
+                    "refresh_token": "def50200...",
+                },
+            ]
+        }
     }
-}
 
 
 class NewPasswordRequest(BaseModel):
