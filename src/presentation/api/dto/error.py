@@ -103,3 +103,17 @@ class InvalideCredentialResponse(BaseModel):
             }
         }
     }
+
+
+class UnauthorizedResponse(BaseModel):
+    error: str = "Unauthorized"
+    message: str
+
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "error": "Unauthorized",
+                "message": "cookie отсутствуют",
+            }
+        }
+    }

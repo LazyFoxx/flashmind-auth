@@ -51,20 +51,13 @@ class RedisRefreshTokenRepository(AbstractRefreshTokenRepository):
     async def get_user_id_by_jti(self, token_jti: str) -> UUID | None:
         """
         Атомарно:
-        - Проверяет существование токена
-        - Возвращает user_id
-        - Удаляет оба ключа (consume для rotation)
-
-        Если токен уже использован → возвращает None (защита от reuse).
+        - GET + DEL jti -> user_id
+        - Если токен уже использован → None
         """
         jti_key = f"{self.prefix_jti}{token_jti}"
 
         # Получаем user_id и сразу удаляем ключ jti → user_id
-        pipe = self.redis.pipeline()
-        pipe.getdel(jti_key)  # Redis 6.2+
-        await pipe.execute()
-
-        raw_user_id = pipe.getdel(jti_key)
+        raw_user_id = await self.redis.getdel(jti_key)
 
         if raw_user_id is None:
             return None

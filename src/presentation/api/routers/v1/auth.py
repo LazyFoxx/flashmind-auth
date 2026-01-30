@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, BackgroundTasks, Response
+from fastapi import APIRouter, Cookie, Depends, status, BackgroundTasks, Response
 from dishka.integrations.fastapi import FromDishka, inject
 from src.secure.dependencies import get_current_user
 from src.domain.entities.user import User
@@ -35,6 +35,7 @@ from src.presentation.api.dto.error import (
     LimitCodeAttemptsResponse,
     RateLimitExceededResponse,
     RequestExpiredResponse,
+    UnauthorizedResponse,
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -366,3 +367,38 @@ async def change_password(
     )
 
     return LoginResponse(access_token=tokens.access_token, expires_in=1800)
+
+
+@router.post(
+    "/refresh",
+    response_model=TokenAccessResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Выдача нового access токена и ротация refresh токена",
+    description=("Принимает "),
+    responses={
+        401: {
+            "model": UnauthorizedResponse,
+            "description": "Неверный токен или его отсутствие",
+        },
+    },
+)
+@inject
+async def refresh(
+    response: Response,
+    use_case: FromDishka[FinishChangePasswordUseCase],
+    refresh_token: str | None = Cookie(default=None),
+) -> TokenAccessResponse:
+    tokens = await use_case.execute(refresh_token)
+
+    response.set_cookie(
+        key="refresh_token",
+        value=tokens.refresh_token,
+        httponly=True,  # Защита от XSS — JS не увидит токен
+        secure=False,  # Только HTTPS (в dev можно временно False)
+        samesite="lax",  # "strict" тоже можно, но "lax" удобнее для UX
+        max_age=60 * 60 * 24 * 30,  # 30 дней
+        path="/",  # Доступен для всего сайта
+        # domain="api.example.com"   # если нужен кросс-домен
+    )
+
+    return TokenAccessResponse(access_token=tokens.access_token, expires_in=1800)

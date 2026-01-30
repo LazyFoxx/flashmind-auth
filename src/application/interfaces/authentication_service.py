@@ -14,7 +14,9 @@ class AbstractAuthenticationService(ABC):
 
     @abstractmethod
     async def authenticate_and_generate_tokens(
-        self, user_id: UUID, refresh_token: Optional[str] = NotImplemented
+        self,
+        user_id: Optional[UUID] = None,
+        refresh_token: Optional[str] = NotImplemented,
     ) -> Tuple[str, str]:
         """
         Генерирует access и refresh токены, сохраняет refresh (jti) в хранилище (удаляет предыдущий если он передан для ротации)

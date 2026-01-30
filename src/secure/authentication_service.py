@@ -25,7 +25,7 @@ class AuthenticationService(AbstractAuthenticationService):
 
     async def authenticate_and_generate_tokens(
         self,
-        user_id: UUID,
+        user_id: Optional[UUID] = None,
         refresh_token: Optional[str] = None,
         extra_claims: Optional[dict] = None,
     ) -> Tuple[str, str]:
@@ -41,6 +41,10 @@ class AuthenticationService(AbstractAuthenticationService):
             - Генерируем новый access + новый refresh
             - Сохраняем новый jti (перезаписывает старый автоматически)
         """
+
+        if user_id is None and refresh_token is None:
+            raise ValueError("Either user_id or refresh_token must be provided")
+
         if refresh_token:
             try:
                 payload = self.jwt_service.verify_refresh_token(refresh_token)
@@ -48,18 +52,21 @@ class AuthenticationService(AbstractAuthenticationService):
                 raise InvalidTokenError("Invalid or expired refresh token") from e
 
             old_jti = payload["jti"]
-            if UUID(payload["sub"]) != user_id:
-                raise InvalidTokenError("Token-user mismatch")
+
+            user_id = UUID(payload["sub"])
 
             # Атомарный consume старого токена + reuse detection
             consumed_user_id = await self.refresh_token_repo.get_user_id_by_jti(old_jti)
 
-            if consumed_user_id is None or consumed_user_id != user_id:
+            if consumed_user_id is None:
                 # Reuse detected или токен уже отозван → сразу revoke текущую сессию  (logout)
                 await self.refresh_token_repo.revoke_by_user_id(user_id)
                 raise TokenReuseDetectedError(
                     "Refresh token reused or revoked – possible theft"
                 )
+
+        if user_id is None:
+            raise ValueError()
 
         # Генерируем новую пару токенов
         access_token = self.jwt_service.create_access_token(
