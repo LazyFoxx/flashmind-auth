@@ -5,7 +5,6 @@ from src.secure.dependencies import get_current_user
 from src.application.use_cases import (
     FinishChangePasswordUseCase,
 )
-
 from src.presentation.api.dto.auth import (
     TokenAccessResponse,
 )
