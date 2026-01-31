@@ -3,6 +3,7 @@ name: auth-dev
 
 services:
   auth-dev:
+    user: root
     build: .
     container_name: auth-dev
     restart: unless-stopped
@@ -108,6 +109,6 @@ networks:
 
 secrets:
   jwt_private_key:
-    file: ./keys/private_key.pem        # ← просто берёт файл с хоста
+    file: ./keys/private_key.pem
   jwt_public_key:
     file: ./keys/public_key.pem
