@@ -46,7 +46,7 @@ class AuthlibJWTService(AbstractJWTService):
                 kid=self.kid,
                 alg=self.alg,
                 public_key=self.private_key,
-                private_key=self.public_key,
+                # private_key=self.public_key,
             )
         ]
 

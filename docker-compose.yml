@@ -1,11 +1,10 @@
 
-name: auth-dev
+name: development
 
 services:
   auth-dev:
     user: root
     build: .
-    container_name: auth-dev
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -26,6 +25,7 @@ services:
       - jwt_public_key
     networks:
       - auth-network
+      - app-network
     # Переопределяем CMD для включения reload
     command: sh -c "
         alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
@@ -33,7 +33,6 @@ services:
 
   auth-postgres-dev:
     image: postgres:16-alpine
-    container_name: auth-postgres-dev
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -51,7 +50,6 @@ services:
 
   auth-redis-dev:
     image: redis:7-alpine
-    container_name: auth-redis-dev
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -70,7 +68,6 @@ services:
   # === Удобные GUI-инструменты ===
   auth-adminer:
     image: adminer:latest
-    container_name: auth-adminer
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -85,7 +82,6 @@ services:
 
   auth-pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: auth-pgadmin
     restart: unless-stopped
     ports:
       - "5050:80"
@@ -105,6 +101,8 @@ volumes:
 
 networks:
   auth-network:
+    driver: bridge
+  app-network:
     driver: bridge
 
 secrets:

@@ -23,8 +23,6 @@ async def get_jwks(
     use_case: FromDishka[JWKSUseCase], response: Response
 ) -> JWKSResponse:
     jwks = await use_case.execute()
-    print(jwks)
-
     response.headers["Cache-Control"] = "public, max-age=3600"
 
     return JWKSResponse(keys=[JWK(**key) for key in jwks["keys"]])
