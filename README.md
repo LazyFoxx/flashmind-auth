@@ -3,7 +3,7 @@
 ### 1. Клонирование репозитория
 ```bash
 git clone https://github.com/LazyFoxx/flashmind-auth.git
-cd auth-service
+cd flashmind-auth
 ```
 ### 2. Создание файла с переменными окружения
 Скопируй пример файла и отредактируй при необходимости:
@@ -27,7 +27,7 @@ docker compose up -d
 ### 4. Основные команды
 следишь за логами и hot-reload'ом:
 ```bash
-docker compose logs -f auth-dev ( нужно чтобы отслуживать коды подтверждения в консоли)
+docker compose logs -f auth-dev ( нужно чтобы отслеживать коды подтверждения в консоли)
 
 # Остановить все контейнеры
 docker compose down
