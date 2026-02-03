@@ -24,4 +24,3 @@ class CORSConfig(BaseSettings):
 
 
 cors_config = CORSConfig()
-print(cors_config)
