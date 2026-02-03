@@ -1,12 +1,36 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ValidationInfo
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=8)
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Пароль должен быть не менее 8 символов и содержать хотя бы одну строчную, заглавную буквы и хотя бы одну цифру",
+    )
+
+    def validate_password(cls, value: str, info: ValidationInfo) -> str:
+        if len(value) < 8:
+            raise ValueError("Пароль должен быть не менее 8 символов длиной")
+
+        if not any(c.isupper() for c in value):
+            raise ValueError(
+                "Пароль должен содержать хотя бы одну заглавную букву (A-Z)"
+            )
+
+        if not any(c.islower() for c in value):
+            raise ValueError(
+                "Пароль должен содержать хотя бы одну строчную букву (a-z)"
+            )
+
+        if not any(c.isdigit() for c in value):
+            raise ValueError("Пароль должен содержать хотя бы одну цифру (0-9)")
+
+        return value
 
 
-class LoginRequest(RegisterRequest):
+class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
 
@@ -90,4 +114,28 @@ class TokenAccessResponse(BaseModel):
 
 
 class NewPasswordRequest(BaseModel):
-    password: str = Field(..., min_length=8)
+    password: str = Field(
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Пароль должен быть не менее 8 символов и содержать хотя бы одну строчную, заглавную буквы и хотя бы одну цифру",
+    )
+
+    def validate_password(cls, value: str, info: ValidationInfo) -> str:
+        if len(value) < 8:
+            raise ValueError("Пароль должен быть не менее 8 символов длиной")
+
+        if not any(c.isupper() for c in value):
+            raise ValueError(
+                "Пароль должен содержать хотя бы одну заглавную букву (A-Z)"
+            )
+
+        if not any(c.islower() for c in value):
+            raise ValueError(
+                "Пароль должен содержать хотя бы одну строчную букву (a-z)"
+            )
+
+        if not any(c.isdigit() for c in value):
+            raise ValueError("Пароль должен содержать хотя бы одну цифру (0-9)")
+
+        return value
