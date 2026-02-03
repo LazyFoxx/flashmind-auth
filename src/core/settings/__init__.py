@@ -4,6 +4,7 @@ from .redis import RedisSettings
 from .verification_code import VerificationCodeConfig
 from .jwt import JwtSettings
 from .email import EmailSettings
+from .cors import cors_config
 
 
 __all__ = [
@@ -13,4 +14,5 @@ __all__ = [
     "VerificationCodeConfig",
     "JwtSettings",
     "EmailSettings",
+    "cors_config",
 ]

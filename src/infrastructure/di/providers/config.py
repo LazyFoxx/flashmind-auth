@@ -29,7 +29,7 @@ class ConfigProvider(Provider):
         return RedisSettings()
 
     @provide(scope=Scope.APP)
-    def get_jwt_settings(self) -> JwtSettings:
+    def jwt_settings(self) -> JwtSettings:
         return JwtSettings()
 
     @provide(scope=Scope.APP)
