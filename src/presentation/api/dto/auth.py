@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, ValidationInfo
+from pydantic import BaseModel, EmailStr, Field, ValidationInfo, validator
 
 
 class RegisterRequest(BaseModel):
@@ -10,7 +10,8 @@ class RegisterRequest(BaseModel):
         description="Пароль должен быть не менее 8 символов и содержать хотя бы одну строчную, заглавную буквы и хотя бы одну цифру",
     )
 
-    def validate_password(cls, value: str, info: ValidationInfo) -> str:
+    @validator("password")
+    def validate_password(cls, value: str) -> str:
         if len(value) < 8:
             raise ValueError("Пароль должен быть не менее 8 символов длиной")
 
