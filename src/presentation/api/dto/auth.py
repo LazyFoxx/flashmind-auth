@@ -5,7 +5,6 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(
         ...,
-        min_length=8,
         max_length=128,
         description="Пароль должен быть не менее 8 символов и содержать хотя бы одну строчную, заглавную буквы и хотя бы одну цифру",
     )
@@ -28,12 +27,42 @@ class RegisterRequest(BaseModel):
         if not any(c.isdigit() for c in value):
             raise ValueError("Пароль должен содержать хотя бы одну цифру (0-9)")
 
+        if len(value) < 8:
+            raise ValueError("Пароль должен состоять минимум из 8 символов")
+
         return value
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=8)
+    password: str = Field(
+        ...,
+        max_length=128,
+        description="Пароль должен быть не менее 8 символов и содержать хотя бы одну строчную, заглавную буквы и хотя бы одну цифру",
+    )
+
+    @validator("password")
+    def validate_password(cls, value: str) -> str:
+        if len(value) < 8:
+            raise ValueError("Пароль должен быть не менее 8 символов длиной")
+
+        if not any(c.isupper() for c in value):
+            raise ValueError(
+                "Пароль должен содержать хотя бы одну заглавную букву (A-Z)"
+            )
+
+        if not any(c.islower() for c in value):
+            raise ValueError(
+                "Пароль должен содержать хотя бы одну строчную букву (a-z)"
+            )
+
+        if not any(c.isdigit() for c in value):
+            raise ValueError("Пароль должен содержать хотя бы одну цифру (0-9)")
+
+        if len(value) < 8:
+            raise ValueError("Пароль должен состоять минимум из 8 символов")
+
+        return value
 
 
 class MessageResponse(BaseModel):
