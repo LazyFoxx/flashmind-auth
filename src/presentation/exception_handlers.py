@@ -1,3 +1,5 @@
+import structlog
+
 from src.application.exceptions import (
     EmailAlreadyExistsError,
     CooldownEmailError,
@@ -13,8 +15,11 @@ from src.application.exceptions import (
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+logger = structlog.get_logger()
+
 
 async def request_expired_handler(request: Request, exc: RequestExpiredError):
+    logger.warning("Запрос истек", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=410,
         content={
@@ -25,6 +30,7 @@ async def request_expired_handler(request: Request, exc: RequestExpiredError):
 
 
 async def limit_code_attempts_handler(request: Request, exc: LimitCodeAttemptsError):
+    logger.warning("Лимит попыток ввести код", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=429,
         content={
@@ -35,6 +41,7 @@ async def limit_code_attempts_handler(request: Request, exc: LimitCodeAttemptsEr
 
 
 async def code_attempts_handler(request: Request, exc: CodeAttemptError):
+    logger.warning("Неверная попытка ввести код", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=400,
         content={
@@ -46,6 +53,7 @@ async def code_attempts_handler(request: Request, exc: CodeAttemptError):
 
 
 async def email_exists_handler(request: Request, exc: EmailAlreadyExistsError):
+    logger.warning("Имейл уже существует", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=409,
         content={
@@ -57,6 +65,11 @@ async def email_exists_handler(request: Request, exc: EmailAlreadyExistsError):
 
 
 async def cooldown_email_handler(request: Request, exc: CooldownEmailError):
+    logger.warning(
+        "Попытка отправить имейл до истечения кулдауна",
+        error=str(exc),
+        path=request.url.path,
+    )
     return JSONResponse(
         status_code=429,
         content={
@@ -68,6 +81,7 @@ async def cooldown_email_handler(request: Request, exc: CooldownEmailError):
 
 
 async def rate_limit_exceed_handler(request: Request, exc: RateLimitExceededError):
+    logger.warning("Лимит попыток регистрации", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=429,
         content={
@@ -78,6 +92,7 @@ async def rate_limit_exceed_handler(request: Request, exc: RateLimitExceededErro
 
 
 async def invalide_credentional_handler(request: Request, exc: InvalidCredentialsError):
+    logger.warning("Неверные данные", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=401,
         content={
@@ -88,6 +103,7 @@ async def invalide_credentional_handler(request: Request, exc: InvalidCredential
 
 
 async def user_not_found_handler(request: Request, exc: UserNotFoundError):
+    logger.warning("Неверный имейл", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=200,
         content={
@@ -97,6 +113,7 @@ async def user_not_found_handler(request: Request, exc: UserNotFoundError):
 
 
 async def invalid_token(request: Request, exc: InvalidTokenError):
+    logger.info("Неверный токен", error=str(exc), path=request.url.path)
     return JSONResponse(
         status_code=401,
         headers={"WWW-Authenticate": "Bearer"},

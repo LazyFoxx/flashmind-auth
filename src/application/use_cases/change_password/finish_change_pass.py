@@ -1,4 +1,5 @@
 import asyncio
+import structlog
 from src.application.dtos.auth_response_dto import AuthResponseDTO
 from src.domain.entities.user import User
 from src.domain.value_objects.hashed_password import HashedPassword
@@ -22,6 +23,7 @@ class FinishChangePasswordUseCase:
         self.verification_code_repo = verification_code_repo
         self.authentication = authentication
         self.uow = uow
+        self.logger = structlog.get_logger(__name__)
 
     async def execute(self, user: User, new_password: str) -> AuthResponseDTO:
         # хешируем пароль
@@ -33,11 +35,13 @@ class FinishChangePasswordUseCase:
         async with self.uow:
             await self.uow.users.set_password(user.id, password_hash.value)
             await self.uow.commit()
+        self.logger.info("Пароль изменен в БД", user_id=user.id)
 
         # генерируем токены доступа и сохраняем refresh в редис
         (
             access_token,
             refresh_token,
         ) = await self.authentication.authenticate_and_generate_tokens(user.id)
+        self.logger.info("Сгенерированны токены", user_id=user.id)
 
         return AuthResponseDTO(access_token, refresh_token)

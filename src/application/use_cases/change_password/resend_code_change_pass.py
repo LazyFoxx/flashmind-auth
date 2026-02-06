@@ -1,6 +1,5 @@
 import asyncio
 import secrets
-
 from fastapi import BackgroundTasks
 from src.core.settings import VerificationCodeConfig, RateLimitConfig
 from src.application.exceptions import CooldownEmailError, RequestExpiredError
