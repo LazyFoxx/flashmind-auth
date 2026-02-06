@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, ValidationInfo, validator
+from pydantic import BaseModel, EmailStr, Field, validator
 
 
 class RegisterRequest(BaseModel):
@@ -12,7 +12,7 @@ class RegisterRequest(BaseModel):
     @validator("password")
     def validate_password(cls, value: str) -> str:
         if len(value) < 8:
-            raise ValueError("Пароль должен быть не менее 8 символов длиной")
+            raise ValueError("Пароль должен быть не менее 8 символов")
 
         if not any(c.isupper() for c in value):
             raise ValueError(
@@ -40,29 +40,6 @@ class LoginRequest(BaseModel):
         max_length=128,
         description="Пароль должен быть не менее 8 символов и содержать хотя бы одну строчную, заглавную буквы и хотя бы одну цифру",
     )
-
-    @validator("password")
-    def validate_password(cls, value: str) -> str:
-        if len(value) < 8:
-            raise ValueError("Пароль должен быть не менее 8 символов длиной")
-
-        if not any(c.isupper() for c in value):
-            raise ValueError(
-                "Пароль должен содержать хотя бы одну заглавную букву (A-Z)"
-            )
-
-        if not any(c.islower() for c in value):
-            raise ValueError(
-                "Пароль должен содержать хотя бы одну строчную букву (a-z)"
-            )
-
-        if not any(c.isdigit() for c in value):
-            raise ValueError("Пароль должен содержать хотя бы одну цифру (0-9)")
-
-        if len(value) < 8:
-            raise ValueError("Пароль должен состоять минимум из 8 символов")
-
-        return value
 
 
 class MessageResponse(BaseModel):
@@ -146,14 +123,14 @@ class TokenAccessResponse(BaseModel):
 class NewPasswordRequest(BaseModel):
     password: str = Field(
         ...,
-        min_length=8,
         max_length=128,
         description="Пароль должен быть не менее 8 символов и содержать хотя бы одну строчную, заглавную буквы и хотя бы одну цифру",
     )
 
-    def validate_password(cls, value: str, info: ValidationInfo) -> str:
+    @validator("password")
+    def validate_password(cls, value: str) -> str:
         if len(value) < 8:
-            raise ValueError("Пароль должен быть не менее 8 символов длиной")
+            raise ValueError("Пароль должен быть не менее 8 символов")
 
         if not any(c.isupper() for c in value):
             raise ValueError(
@@ -167,5 +144,8 @@ class NewPasswordRequest(BaseModel):
 
         if not any(c.isdigit() for c in value):
             raise ValueError("Пароль должен содержать хотя бы одну цифру (0-9)")
+
+        if len(value) < 8:
+            raise ValueError("Пароль должен состоять минимум из 8 символов")
 
         return value
