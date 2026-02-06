@@ -8,18 +8,23 @@ from src.presentation.exception_handlers import setup_exception_handlers
 from src.presentation.api.routers.router import api_router
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.core.logging.config import setup_logging
+from src.core.middleware.logging_middleware import LoggingMiddleware
+
 container = get_container()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup
+    setup_logging()
     yield
     # shutdown
     await container.close()
 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(LoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_config.origins,
