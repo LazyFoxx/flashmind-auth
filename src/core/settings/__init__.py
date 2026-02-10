@@ -5,6 +5,7 @@ from .verification_code import VerificationCodeConfig
 from .jwt import JwtSettings
 from .email import EmailSettings
 from .cors import cors_config
+from .rabbit import RabbitSettings
 
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     "JwtSettings",
     "EmailSettings",
     "cors_config",
+    "RabbitSettings",
 ]

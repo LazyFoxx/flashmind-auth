@@ -9,6 +9,7 @@ from .redis import RedisProvider
 from .verification_code import VerificationCodeProvider
 from .refresh_token import RefreshTokenProvider
 from .auth_use_cases import AuthUseCaseProvider
+from .rabbit import RabbitProvider
 
 __all__ = [
     "AuthProvider",
@@ -22,4 +23,5 @@ __all__ = [
     "VerificationCodeProvider",
     "RefreshTokenProvider",
     "AuthUseCaseProvider",
+    "RabbitProvider",
 ]

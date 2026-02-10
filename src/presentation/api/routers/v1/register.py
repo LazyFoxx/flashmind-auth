@@ -1,5 +1,7 @@
 from fastapi import APIRouter, status, BackgroundTasks, Response
 from dishka.integrations.fastapi import FromDishka, inject
+from src.infrastructure.rabbit.models import MessagePayload
+from src.infrastructure.rabbit.publisher import RabbitPublisher
 from src.application.dtos import VerifyCodeDTO
 
 from src.application.use_cases import (
@@ -102,6 +104,7 @@ async def verify_registration(
     payload: EmailVerificationRequest,
     response: Response,
     use_case: FromDishka[FinishRegistrationUseCase],
+    publisher: FromDishka[RabbitPublisher],
 ) -> LoginResponse:
     """
     Завершает процесс регистрации:
@@ -111,7 +114,7 @@ async def verify_registration(
     - В случае успеха производит автологин с выдачей токенов
     """
     dto = VerifyCodeDTO(email=payload.email, code=payload.code)
-    tokens = await use_case.execute(input_dto=dto)
+    tokens, user_id = await use_case.execute(input_dto=dto)
 
     response.set_cookie(
         key="refresh_token",
@@ -122,6 +125,12 @@ async def verify_registration(
         max_age=60 * 60 * 24 * 30,  # 30 дней
         path="/",  # Доступен для всего сайта
         # domain="api.example.com"   # если нужен кросс-домен
+    )
+
+    await publisher.publish(
+        exchange="events",  # Название обменника
+        routing_key="user.registered",  # Роутинг-ключ
+        payload=MessagePayload(user_id=user_id),  # Модель с данными
     )
 
     return LoginResponse(

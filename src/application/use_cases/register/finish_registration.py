@@ -33,7 +33,7 @@ class FinishRegistrationUseCase:
         self.uow = uow
         self.max_attempts = verification_code_cfg.max_attempts
 
-    async def execute(self, input_dto: VerifyCodeDTO) -> AuthResponseDTO:
+    async def execute(self, input_dto: VerifyCodeDTO) -> tuple[AuthResponseDTO, str]:
         email_vo = Email.create(input_dto.email)
         user_otp = input_dto.code
 
@@ -90,4 +90,4 @@ class FinishRegistrationUseCase:
 
             await self.uow.commit()
 
-        return AuthResponseDTO(access_token, refresh_token)
+        return AuthResponseDTO(access_token, refresh_token), str(user.id)

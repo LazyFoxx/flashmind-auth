@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-
 from src.core.settings.cors import cors_config
 from src.infrastructure.di.container import get_container
 from dishka.integrations.fastapi import setup_dishka

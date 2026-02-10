@@ -30,7 +30,13 @@ services:
     command: sh -c "
         alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir src
         "
-
+  rabbitmq:
+    image: "rabbitmq:management"
+    ports:
+      - "5672:5672"   # Порт RabbitMQ для обмена сообщениями
+      - "15672:15672" # Веб-менеджер RabbitMQ для мониторинга
+    networks:
+      - app-network
   auth-postgres-dev:
     image: postgres:16-alpine
     restart: unless-stopped

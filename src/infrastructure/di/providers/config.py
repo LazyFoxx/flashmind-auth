@@ -6,6 +6,7 @@ from src.core.settings import (
     RedisSettings,
     JwtSettings,
     EmailSettings,
+    RabbitSettings,
 )
 from authlib.jose import JsonWebKey
 
@@ -40,3 +41,7 @@ class ConfigProvider(Provider):
     def provide_public_key(self, settings: FromDishka[JwtSettings]) -> JsonWebKey:
         with open(settings.public_key_path) as f:
             return JsonWebKey.import_key(f.read(), {"kty": "RSA"})
+
+    @provide(scope=Scope.APP)
+    def rabbit_settings(self) -> RabbitSettings:
+        return RabbitSettings()

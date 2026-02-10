@@ -12,6 +12,7 @@ from .providers import (
     VerificationCodeProvider,
     RefreshTokenProvider,
     AuthUseCaseProvider,
+    RabbitProvider,
 )
 
 # Список всех провайдеров
@@ -27,6 +28,7 @@ _PROVIDERS = [
     VerificationCodeProvider(),
     RefreshTokenProvider(),
     AuthUseCaseProvider(),
+    RabbitProvider(),
 ]
 
 
