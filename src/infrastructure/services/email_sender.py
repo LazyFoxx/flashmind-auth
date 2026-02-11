@@ -1,6 +1,7 @@
 from typing import List, Optional
 import resend
 from fastapi import BackgroundTasks
+import structlog
 
 from src.application.interfaces import AbstractEmailSender
 from src.core.settings import EmailSettings
@@ -20,6 +21,7 @@ class ResendEmailSender(AbstractEmailSender):
         self.from_email = settings.from_email
         self.from_name = settings.from_name
         self.dev = settings.dev
+        self.logger = structlog.get_logger(__name__)
 
     async def _send_email(
         self,
@@ -78,6 +80,8 @@ class ResendEmailSender(AbstractEmailSender):
         else:
             await _task()
 
+        self.logger.info("Код отправлен на email", email=to)
+
     async def send_register_verification_code(
         self,
         email: str,
@@ -88,7 +92,7 @@ class ResendEmailSender(AbstractEmailSender):
         если settings.dev = True то отправляет в консоль"""
 
         if self.dev:  # не отправляет на email и выводит код в консоль
-            print(code)
+            self.logger.info(f"Код верификации email: {code}")
             return None
 
         subject = "FlashMind — подтвердите email"
@@ -146,7 +150,7 @@ class ResendEmailSender(AbstractEmailSender):
         если settings.dev = True то отправляет в консоль"""
 
         if self.dev:  # не отправляет на email и выводит код в консоль
-            print(code)
+            self.logger.info(f"Код сброса пароля: {code}")
             return None
 
         subject = "FlashMind — сброс пароля"
