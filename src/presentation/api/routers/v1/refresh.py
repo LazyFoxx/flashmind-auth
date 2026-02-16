@@ -1,9 +1,7 @@
 from fastapi import APIRouter, Cookie, HTTPException, status, Response, Body
 from dishka.integrations.fastapi import FromDishka, inject
+from src.application.use_cases.refresh.refresh import RefreshTokensUseCase
 
-from src.application.use_cases import (
-    FinishChangePasswordUseCase,
-)
 from src.presentation.api.dto.auth import (
     TokenAccessResponse,
 )
@@ -30,7 +28,7 @@ router = APIRouter(tags=["refresh token"])
 @inject
 async def refresh(
     response: Response,
-    use_case: FromDishka[FinishChangePasswordUseCase],
+    use_case: FromDishka[RefreshTokensUseCase],
     refresh_token_cookie: str | None = Cookie(default=None),
     refresh_token_body: str | None = Body(default=None, embed=True),
 ) -> TokenAccessResponse:
