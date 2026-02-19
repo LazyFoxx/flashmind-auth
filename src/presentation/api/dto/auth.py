@@ -65,7 +65,7 @@ class LoginResponse(BaseModel):
     message: str = "Успешная авторизация!"
     access_token: str
     token_type: str = "bearer"
-    expires_in: int  # время жизни access-токена в секундах
+    expires_in: int = Field(..., description="Время жизни access_token в секундах")
     refresh_token: str | None = Field(
         default=None,
         description="Возвращается только для non-cookie клиентов (mobile / native)",

@@ -15,3 +15,6 @@ class JwtSettings(BaseSettings):
     issuer: str
     access_expire_minutes: int
     refresh_expire_days: int
+
+
+settings = JwtSettings()

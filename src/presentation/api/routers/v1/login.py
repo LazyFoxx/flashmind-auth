@@ -15,6 +15,7 @@ from src.presentation.api.dto.error import (
     RateLimitExceededResponse,
 )
 
+from src.core.settings.jwt import settings as jwt_settings
 
 router = APIRouter(tags=["login"])
 
@@ -62,6 +63,6 @@ async def login(
 
     return LoginResponse(
         access_token=tokens.access_token,
-        expires_in=1800,
+        expires_in=jwt_settings.access_expire_minutes * 60,
         refresh_token=tokens.refresh_token,
     )

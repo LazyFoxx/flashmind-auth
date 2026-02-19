@@ -27,6 +27,8 @@ from src.presentation.api.dto.error import (
     RequestExpiredResponse,
 )
 
+from src.core.settings.jwt import settings as jwt_settings
+
 router = APIRouter(tags=["reset_password"])
 
 
@@ -175,6 +177,6 @@ async def change_password(
 
     return LoginResponse(
         access_token=tokens.access_token,
-        expires_in=1800,
+        expires_in=jwt_settings.access_expire_minutes * 60,
         refresh_token=tokens.refresh_token,
     )

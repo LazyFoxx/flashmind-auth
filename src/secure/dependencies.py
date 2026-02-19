@@ -1,3 +1,4 @@
+from datetime import datetime
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
 from fastapi import Depends, HTTPException, status
@@ -34,13 +35,21 @@ async def get_current_user(
             claims_options={
                 "iss": {"essential": True, "value": issuer},
                 "sub": {"essential": True},
-                "exp": {"essential": True},
+                "exp": {"essential": True, "validate": True},
                 "iat": {"essential": True},
                 # "nbf": {"essential": False},
                 # "aud": {"essential": True, "value": "..."}
                 # "scope": {"essential": False},
             },
         )
+        timestamp = int(claims["exp"])
+        # dt = datetime.utcfromtimestamp(timestamp)
+        # now = (datetime.utcnow())
+        # print(dt, now)
+        # exp_timestamp = claims.get("exp")
+        if datetime.utcfromtimestamp(timestamp) < datetime.utcnow():
+            raise InvalidTokenError("Token expired")
+
     except ExpiredTokenError:
         raise InvalidTokenError("Token expired")
     except InvalidClaimError:
