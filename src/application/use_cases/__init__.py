@@ -8,6 +8,7 @@ from .change_password.finish_change_pass import FinishChangePasswordUseCase
 from .change_password.resend_code_change_pass import ResendCodeChangePasswordUseCase
 from .jwks.jwks import JWKSUseCase
 from .refresh.refresh import RefreshTokensUseCase
+from .logout.logout import LogoutUseCase
 
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "ResendCodeChangePasswordUseCase",
     "JWKSUseCase",
     "RefreshTokensUseCase",
+    "LogoutUseCase",
 ]

@@ -1,4 +1,3 @@
-# src/infrastructure/di/providers/auth_use_cases.py
 from dishka import Provider, Scope, provide
 from src.application.use_cases import (
     InitiateRegistrationUseCase,
@@ -11,6 +10,7 @@ from src.application.use_cases import (
     ResendCodeChangePasswordUseCase,
     JWKSUseCase,
     RefreshTokensUseCase,
+    LogoutUseCase,
 )
 
 
@@ -29,3 +29,4 @@ class AuthUseCaseProvider(Provider):
     )
     jwks = provide(JWKSUseCase, scope=Scope.REQUEST)
     refresh = provide(RefreshTokensUseCase, scope=Scope.REQUEST)
+    logout = provide(LogoutUseCase, scope=Scope.REQUEST)
