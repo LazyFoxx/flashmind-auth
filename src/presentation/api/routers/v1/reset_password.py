@@ -166,7 +166,11 @@ async def change_password(
 
     response.set_cookie(
         key="refresh_token",
-        value=tokens.refresh_token,
+        value=(
+            tokens.refresh_token.decode("utf-8")
+            if isinstance(tokens.refresh_token, bytes)
+            else str(tokens.refresh_token)
+        ),
         httponly=True,  # Защита от XSS — JS не увидит токен
         secure=False,  # Только HTTPS (в dev можно временно False)
         samesite="lax",  # "strict" тоже можно, но "lax" удобнее для UX

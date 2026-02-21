@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Cookie, HTTPException, status, Response, Body
+from fastapi import APIRouter, HTTPException, Request, status, Response, Body
 from dishka.integrations.fastapi import FromDishka, inject
 from src.application.use_cases.refresh.refresh import RefreshTokensUseCase
 
@@ -32,15 +32,16 @@ logger = structlog.get_logger()
 async def refresh(
     response: Response,
     use_case: FromDishka[RefreshTokensUseCase],
-    refresh_token_cookie: str | None = Cookie(default=None),
+    request: Request,
     refresh_token_body: str | None = Body(default=None, embed=True),
 ) -> TokenAccessResponse:
+    refresh_token_cookie = request.cookies.get("refresh_token")
     if refresh_token_cookie:
         logger.debug(
-            f"Получен токен refresh_token_cookie = {refresh_token_cookie[:-10]}"
+            "Получен рефреш токен через cookies", token=refresh_token_cookie[-15:]
         )
     if refresh_token_body:
-        logger.debug(f"Получен токен refresh_token_body = {refresh_token_body[:-10]}")
+        logger.debug("Получен рефреш токен через body", token=refresh_token_body[-15:])
 
     refresh_token = refresh_token_cookie or refresh_token_body
 
@@ -53,7 +54,11 @@ async def refresh(
     if refresh_token_cookie:
         response.set_cookie(
             key="refresh_token",
-            value=tokens.refresh_token,
+            value=(
+                tokens.refresh_token.decode("utf-8")
+                if isinstance(tokens.refresh_token, bytes)
+                else str(tokens.refresh_token)
+            ),
             httponly=True,  # Защита от XSS — JS не увидит токен
             secure=False,  # Только HTTPS (в dev можно временно False)
             samesite="lax",  # "strict" тоже можно, но "lax" удобнее для UX
@@ -65,6 +70,7 @@ async def refresh(
     else:
         refresh_token_response = tokens.refresh_token
 
+    logger.debug("Выданы новые токены")
     return TokenAccessResponse(
         access_token=tokens.access_token,
         expires_in=jwt_settings.access_expire_minutes * 60,
