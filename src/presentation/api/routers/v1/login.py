@@ -17,6 +17,7 @@ from src.presentation.api.dto.error import (
 
 from src.core.settings.jwt import settings as jwt_settings
 
+
 router = APIRouter(tags=["login"])
 
 

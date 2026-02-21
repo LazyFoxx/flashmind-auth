@@ -8,10 +8,11 @@ from src.presentation.api.dto.auth import (
 from src.presentation.api.dto.error import (
     UnauthorizedResponse,
 )
-
+import structlog
 from src.core.settings.jwt import settings as jwt_settings
 
 router = APIRouter(tags=["refresh token"])
+logger = structlog.get_logger()
 
 
 @router.post(
@@ -34,9 +35,17 @@ async def refresh(
     refresh_token_cookie: str | None = Cookie(default=None),
     refresh_token_body: str | None = Body(default=None, embed=True),
 ) -> TokenAccessResponse:
+    if refresh_token_cookie:
+        logger.debug(
+            f"Получен токен refresh_token_cookie = {refresh_token_cookie[:-10]}"
+        )
+    if refresh_token_body:
+        logger.debug(f"Получен токен refresh_token_body = {refresh_token_body[:-10]}")
+
     refresh_token = refresh_token_cookie or refresh_token_body
 
     if not refresh_token:
+        logger.debug("рефреш токен отсутствует!")
         raise HTTPException(status_code=401, detail="Рефреш токен отсутствует")
 
     tokens = await use_case.execute(refresh_token)
