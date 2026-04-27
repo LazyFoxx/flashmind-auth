@@ -5,7 +5,7 @@ client = TestClient(app)
 
 
 def test_refresh_cookie():
-    # Сначала логин.
+    # Сначала логин
     login_resp = client.post(
         "/api/v1/auth/login", json={"email": "...", "password": "..."}
     )
