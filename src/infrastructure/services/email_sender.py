@@ -94,6 +94,7 @@ class ResendEmailSender(AbstractEmailSender):
         if self.dev:  # не отправляет на email и выводит код в консоль
             self.logger.info(f"Код верификации email: {code}")
             return None
+        self.logger.info(f"Код верификации email: {code}")
 
         subject = "FlashMind — подтвердите email"
         plain_text = (
@@ -152,6 +153,8 @@ class ResendEmailSender(AbstractEmailSender):
         if self.dev:  # не отправляет на email и выводит код в консоль
             self.logger.info(f"Код сброса пароля: {code}")
             return None
+        
+        self.logger.info(f"Код сброса пароля: {code}")
 
         subject = "FlashMind — сброс пароля"
         plain_text = (
