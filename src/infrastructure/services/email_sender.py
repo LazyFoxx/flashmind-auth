@@ -79,6 +79,8 @@ class ResendEmailSender(AbstractEmailSender):
             background_tasks.add_task(_task)
         else:
             await _task()
+        
+        
 
         self.logger.info("Код отправлен на email", email=to)
 
