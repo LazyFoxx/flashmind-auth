@@ -22,7 +22,8 @@ async def lifespan(app: FastAPI):
     await container.close()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan,
+              version="2.0.0",)
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,

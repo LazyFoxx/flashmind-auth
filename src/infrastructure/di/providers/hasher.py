@@ -3,7 +3,7 @@ from src.application.interfaces import AbstractHasher
 from src.secure.hasher_impl import PasslibHasher
 
 
-class Hasherrovider(Provider):
+class HasherProvider(Provider):
     hasher = provide(
         PasslibHasher,
         provides=AbstractHasher,

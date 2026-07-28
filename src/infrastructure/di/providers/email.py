@@ -1,11 +1,11 @@
 from dishka import Provider, Scope, provide
 from src.application.interfaces import AbstractEmailSender
-from src.infrastructure.services.email_sender import ResendEmailSender
+from src.infrastructure.services.email_sender import SmartEmailSender
 
 
 class EmailProvider(Provider):
     email_sender = provide(
-        ResendEmailSender,
+        SmartEmailSender,
         provides=AbstractEmailSender,
         scope=Scope.APP,
     )

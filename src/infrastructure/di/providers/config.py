@@ -7,6 +7,7 @@ from src.core.settings import (
     JwtSettings,
     EmailSettings,
     RabbitSettings,
+    TelegramSettings,
 )
 from authlib.jose import JsonWebKey
 
@@ -36,6 +37,10 @@ class ConfigProvider(Provider):
     @provide(scope=Scope.APP)
     def email_settings(self) -> EmailSettings:
         return EmailSettings()
+    
+    @provide(scope=Scope.APP)
+    def telegram_settings(self) -> TelegramSettings:
+        return TelegramSettings()
 
     @provide(scope=Scope.APP)
     def provide_public_key(self, settings: FromDishka[JwtSettings]) -> JsonWebKey:

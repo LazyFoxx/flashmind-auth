@@ -1,7 +1,9 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, status, Response
 from dishka.integrations.fastapi import FromDishka, inject
-from src.secure.dependencies import get_current_user
-from src.domain.entities.user import User
+from src.secure.dependencies import get_current_user_id
+from src.domain.entities import User
 
 from src.application.use_cases import LogoutUseCase
 
@@ -20,9 +22,9 @@ router = APIRouter(tags=["logout"])
 async def logout(
     response: Response,
     use_case: FromDishka[LogoutUseCase],
-    user: User = Depends(get_current_user),
+    user_id: UUID = Depends(get_current_user_id),
 ) -> None:
-    await use_case.execute(user_id=user.id)
+    await use_case.execute(user_id=user_id)
 
     response.delete_cookie(
         "refresh_token",

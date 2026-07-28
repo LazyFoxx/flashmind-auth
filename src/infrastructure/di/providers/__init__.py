@@ -2,26 +2,23 @@ from .auth import AuthProvider
 from .config import ConfigProvider
 from .db import DbProvider
 from .email import EmailProvider
-from .hasher import Hasherrovider
+from .hasher import HasherProvider
 from .jwt import JwtProvider
-from .rate_limit import RateLimitProvider
-from .redis import RedisProvider
-from .verification_code import VerificationCodeProvider
-from .refresh_token import RefreshTokenProvider
-from .auth_use_cases import AuthUseCaseProvider
+from .caching import CachingProvider
+from .use_cases import UseCaseProvider
 from .rabbit import RabbitProvider
+from .telegram_auth import TelegramAuthProvider
 
 __all__ = [
     "AuthProvider",
     "ConfigProvider",
     "DbProvider",
     "EmailProvider",
-    "Hasherrovider",
+    "HasherProvider",
     "JwtProvider",
-    "RateLimitProvider",
-    "RedisProvider",
-    "VerificationCodeProvider",
-    "RefreshTokenProvider",
-    "AuthUseCaseProvider",
+    "CachingProvider",
+    "UseCaseProvider",
     "RabbitProvider",
+    "TelegramAuthProvider",
 ]
+

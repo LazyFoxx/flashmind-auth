@@ -4,6 +4,8 @@ from src.infrastructure.rabbit import RabbitConnection, RabbitPublisher
 from dishka.entities.key import DependencyKey
 from typing import Callable
 
+from src.application.interfaces import AbstractEventPublisher
+
 USER_REGISTERED = DependencyKey(Callable, "user_registered")
 
 
@@ -15,6 +17,11 @@ class RabbitProvider(Provider):
         await conn.ensure_topology()  # настраиваем топологию
         return conn
 
+    # @provide(scope=Scope.APP)
+    # async def publisher(self, conn: RabbitConnection) -> RabbitPublisher:
+    #     return RabbitPublisher(conn)
+    
     @provide(scope=Scope.APP)
-    async def publisher(self, conn: RabbitConnection) -> RabbitPublisher:
+    async def event_publisher(self, conn: RabbitConnection) -> AbstractEventPublisher:
+        """Возвращаем интерфейс, а не конкретную реализацию"""
         return RabbitPublisher(conn)

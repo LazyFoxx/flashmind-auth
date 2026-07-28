@@ -1,0 +1,37 @@
+from dishka import Provider, Scope, provide
+from src.application.use_cases import (
+    InitiateRegistrationUseCase,
+    FinishRegistrationUseCase,
+    ResendRegistrationCodeUseCase,
+    LoginEmailUseCase,
+    StartChangePasswordUseCase,
+    VerifyCodeChangePasswordUseCase,
+    FinishChangePasswordUseCase,
+    ResendCodeChangePasswordUseCase,
+    JWKSUseCase,
+    RefreshTokensUseCase,
+    LogoutUseCase,
+    TelegramLoginUseCase,
+)
+
+
+class UseCaseProvider(Provider):
+    # email
+    initiate_registration = provide(InitiateRegistrationUseCase, scope=Scope.REQUEST)
+    finish_registration = provide(FinishRegistrationUseCase, scope=Scope.REQUEST)
+    resend_registration = provide(ResendRegistrationCodeUseCase, scope=Scope.REQUEST)
+    email_login = provide(LoginEmailUseCase, scope=Scope.REQUEST)
+    start_change_password = provide(StartChangePasswordUseCase, scope=Scope.REQUEST)
+    verify_code_change_password = provide(
+        VerifyCodeChangePasswordUseCase, scope=Scope.REQUEST
+    )
+    finish_change_password = provide(FinishChangePasswordUseCase, scope=Scope.REQUEST)
+    resend_code_change_password = provide(
+        ResendCodeChangePasswordUseCase, scope=Scope.REQUEST
+    )
+    
+    jwks = provide(JWKSUseCase, scope=Scope.REQUEST)
+    refresh = provide(RefreshTokensUseCase, scope=Scope.REQUEST)
+    logout = provide(LogoutUseCase, scope=Scope.REQUEST)
+    
+    telegram_use_case = provide(TelegramLoginUseCase, scope=Scope.REQUEST)

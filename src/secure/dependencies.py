@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
 from fastapi import Depends, HTTPException, status
@@ -6,21 +7,16 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from authlib.jose import JsonWebKey, JsonWebToken, JoseError
 from authlib.jose.errors import ExpiredTokenError, InvalidClaimError
 from src.core.settings.jwt import JwtSettings
-from src.application.interfaces.unit_of_work import AbstractUnitOfWork
 from src.application.exceptions import InvalidTokenError
-
-from src.domain.entities.user import User
-
 
 bearer_scheme = HTTPBearer()
 
 
 @inject
-async def get_current_user(
+async def get_current_user_id(
     settings: FromDishka[JwtSettings],
-    uow: FromDishka[AbstractUnitOfWork],
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> User:
+) -> UUID:
     token = credentials.credentials
     jwt = JsonWebToken(["RS256"])
     issuer = settings.issuer
@@ -63,9 +59,5 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token missing subject (sub)",
         )
-
-    async with uow:
-        user = await uow.users.get_by_id(user_id)
-        await uow.commit()
-
-    return user
+        
+    return user_id

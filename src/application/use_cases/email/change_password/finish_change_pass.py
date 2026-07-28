@@ -1,0 +1,48 @@
+import asyncio
+from uuid import UUID
+import structlog
+from src.application.dtos.auth_response_dto import AuthResponseDTO
+from src.domain.entities import User
+from src.domain.value_objects.hashed_password import HashedPassword
+from src.application.interfaces import (
+    AbstractAuthenticationService,
+    AbstractVerificationCodeRepository,
+    AbstractUnitOfWork,
+    AbstractHasher,
+)
+
+
+class FinishChangePasswordUseCase:
+    def __init__(
+        self,
+        hasher: AbstractHasher,
+        verification_code_repo: AbstractVerificationCodeRepository,
+        authentication: AbstractAuthenticationService,
+        uow: AbstractUnitOfWork,
+    ):
+        self.hasher = hasher
+        self.verification_code_repo = verification_code_repo
+        self.authentication = authentication
+        self.uow = uow
+        self.logger = structlog.get_logger(__name__)
+
+    async def execute(self, user_id: UUID, new_password: str) -> AuthResponseDTO:
+        # хешируем пароль
+        password_hash = HashedPassword(
+            await asyncio.to_thread(self.hasher.hash, new_password)
+        )
+
+        # Обновляем пароль пользователя
+        async with self.uow:
+            await self.uow.email_users.set_password(user_id=user_id, hashed_password=password_hash.value)
+            
+        self.logger.info("Пароль изменен в БД", user_id=user_id)
+
+        # генерируем токены доступа и сохраняем refresh в редис
+        (
+            access_token,
+            refresh_token,
+        ) = await self.authentication.authenticate_and_generate_tokens(user_id=user_id)
+        self.logger.info("Сгенерированны токены", user_id=user_id)
+
+        return AuthResponseDTO(access_token, refresh_token)

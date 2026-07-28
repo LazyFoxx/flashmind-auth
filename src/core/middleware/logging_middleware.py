@@ -16,39 +16,31 @@ SENSITIVE_FIELDS = {
     "secret",
     "authorization",
     "api_key",
-    "cookie",
-    "x-api-key",
-    "bearer",
 }
 
 
 def sanitize_headers(headers: Dict[str, str]) -> Dict[str, str]:
-    """Маскирует/убирает headers. Укажи, что убрать/маскировать."""
-    sanitized = headers.copy()  # Не мутировать оригинал
-
+    """Оставляет только важные headers, убирает шум."""
+    sanitized = {}
+    
+    # Оставляем только важные headers
+    keep_keys = ["content-type", "accept", "x-forwarded-for", "x-request-id"]
+    
+    for key in keep_keys:
+        if key in headers:
+            sanitized[key] = headers[key]
+    
     # Маскируем sensitive
-    mask_keys = ["authorization", "cookie", "x-auth-token"]
+    mask_keys = ["authorization"]
     for key in mask_keys:
         if key in sanitized:
             sanitized[key] = "******"
-
-    # Убираем шумные/ненужные
-    remove_keys = [
-        "user-agent",
-        "accept-encoding",
-        "accept-language",
-        "referer",
-        "connection",
-        "content-length",
-    ]
-    for key in remove_keys:
-        sanitized.pop(key, None)
 
     return sanitized
 
 
 def mask_sensitive(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Маскирует sensitive поля в dict (body или headers)."""
+    """Маскирует sensitive поля в dict (body)."""
     masked = {}
     for k, v in data.items():
         key_lower = k.lower()
@@ -78,7 +70,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             except json.JSONDecodeError:
                 body = {"error": "Invalid JSON"}
 
-        # Headers с маской
+        # Только важные headers
         headers = sanitize_headers(dict(request.headers))
 
         logger.info(

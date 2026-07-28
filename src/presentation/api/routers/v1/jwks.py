@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, status
 from dishka.integrations.fastapi import FromDishka, inject
-from src.presentation.api.dto.jwks import JWK, JWKSResponse
+from src.presentation.api.dto.v1.jwks import JWK, JWKSResponse
 
 
 from src.application.use_cases import (

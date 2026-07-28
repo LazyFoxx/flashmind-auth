@@ -6,6 +6,7 @@ from .jwt import JwtSettings
 from .email import EmailSettings
 from .cors import cors_config
 from .rabbit import RabbitSettings
+from .telegram import TelegramSettings
 
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "EmailSettings",
     "cors_config",
     "RabbitSettings",
+    "TelegramSettings",
 ]

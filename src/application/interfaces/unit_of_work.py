@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 
-from src.application.interfaces import AbstractUserRepository
-
+from src.domain.entities import AbstractEmailUserRepository, AbstractUserRepository, AbstractTelegramUserRepository
 
 class AbstractUnitOfWork(ABC):
     """Минималистичный современный UoW для async"""
 
+    email_users: AbstractEmailUserRepository
     users: AbstractUserRepository
+    telegram_users: AbstractTelegramUserRepository
 
     async def __aenter__(self) -> "AbstractUnitOfWork":
         return self

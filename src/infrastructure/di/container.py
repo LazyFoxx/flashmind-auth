@@ -5,14 +5,12 @@ from .providers import (
     ConfigProvider,
     DbProvider,
     EmailProvider,
-    Hasherrovider,
+    HasherProvider,
     JwtProvider,
-    RateLimitProvider,
-    RedisProvider,
-    VerificationCodeProvider,
-    RefreshTokenProvider,
-    AuthUseCaseProvider,
+    CachingProvider,
+    UseCaseProvider,
     RabbitProvider,
+    TelegramAuthProvider,
 )
 
 # Список всех провайдеров
@@ -21,14 +19,12 @@ _PROVIDERS = [
     ConfigProvider(),
     DbProvider(),
     EmailProvider(),
-    Hasherrovider(),
+    HasherProvider(),
     JwtProvider(),
-    RateLimitProvider(),
-    RedisProvider(),
-    VerificationCodeProvider(),
-    RefreshTokenProvider(),
-    AuthUseCaseProvider(),
+    CachingProvider(),
+    UseCaseProvider(),
     RabbitProvider(),
+    TelegramAuthProvider(),
 ]
 
 

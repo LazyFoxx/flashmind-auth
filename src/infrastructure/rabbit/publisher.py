@@ -1,19 +1,19 @@
 from aio_pika import ExchangeType, Message, DeliveryMode
 import structlog
 from .connection import RabbitConnection
-from .models import MessagePayload
+from src.application.interfaces import AbstractEventPublisher, UserPayload
 
-
-class RabbitPublisher:
+ 
+class RabbitPublisher(AbstractEventPublisher):
     def __init__(self, connection: RabbitConnection):
         self._connection = connection
         self.logger = structlog.get_logger(__name__)
+        self.exchange = "events"
+        self.routing_key = "user.registered"
 
     async def publish(
         self,
-        exchange: str,
-        routing_key: str,
-        payload: MessagePayload,
+        payload: UserPayload,
     ) -> None:
         try:
             # Сериализуем данные через Pydantic модель
@@ -35,8 +35,8 @@ class RabbitPublisher:
                 delivery_mode=DeliveryMode.PERSISTENT,  # Сообщения сохраняются на диск
             )
 
-            await exchange_obj.publish(message, routing_key=routing_key)
-            self.logger.info("published", exchange=exchange, routing_key=routing_key)
+            await exchange_obj.publish(message, routing_key=self.routing_key)
+            self.logger.info("published", exchange=self.exchange, routing_key=self.routing_key)
 
         except Exception as e:
             self.logger.error(f"Error publishing message: {e}")

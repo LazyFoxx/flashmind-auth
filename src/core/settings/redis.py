@@ -6,8 +6,8 @@ class RedisSettings(BaseSettings):
     host: str
     port: int
     db: str
-    password: SecretStr
-    max_connections: int
+    
+    max_connections: int = 20
 
     model_config = SettingsConfigDict(
         env_prefix="REDIS_", case_sensitive=False, extra="ignore"

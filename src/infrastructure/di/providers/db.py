@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from src.core.settings.database import DatabaseSettings
 
-from src.infrastructure.persistence.unit_of_work import SqlAlchemyUnitOfWork
+from src.infrastructure.db.unit_of_work import SqlAlchemyUnitOfWork
 from src.application.interfaces import AbstractUnitOfWork
 
 

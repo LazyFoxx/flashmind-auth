@@ -2,10 +2,10 @@ from fastapi import APIRouter, HTTPException, Request, status, Response, Body
 from dishka.integrations.fastapi import FromDishka, inject
 from src.application.use_cases.refresh.refresh import RefreshTokensUseCase
 
-from src.presentation.api.dto.auth import (
+from src.presentation.api.dto.v1.auth import (
     TokenAccessResponse,
 )
-from src.presentation.api.dto.error import (
+from src.presentation.api.dto.v1.error import (
     UnauthorizedResponse,
 )
 import structlog

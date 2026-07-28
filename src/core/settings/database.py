@@ -9,9 +9,9 @@ class DatabaseSettings(BaseSettings):
     password: SecretStr
     db: str
 
-    pool_size: int
-    max_overflow: int
-    echo: bool
+    pool_size: int = 10
+    max_overflow: int = 10
+    echo: bool = False
 
     model_config = SettingsConfigDict(
         env_prefix="POSTGRES_", case_sensitive=False, extra="ignore"

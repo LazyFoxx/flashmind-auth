@@ -5,8 +5,17 @@ class EmailSettings(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=False, extra="ignore", env_prefix="EMAIL_"
     )
+    
+    dev: bool
 
     from_email: str
     from_name: str
     resend_api_key: str
-    dev: bool
+    unisender_api_key: str
+    
+    smtp_host: str
+    smtp_port: int
+    smtp_login: str
+    smtp_password: str
+
+
